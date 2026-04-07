@@ -172,21 +172,230 @@ def write_fit_csv(csv_path, rows):
         writer.writerows(rows)
 
 
+def write_double_fit_csv(csv_path, rows):
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "bin_low", "bin_high", "entries",
+            "mean", "mean_err",
+            "sigma_eff", "sigma_eff_err",
+            "sigma_core", "sigma_core_err",
+            "sigma_tail", "sigma_tail_err",
+            "frac_core", "frac_core_err",
+            "chi2", "ndf", "chi2_ndf",
+            "fit_status"
+        ])
+        writer.writerows(rows)
+
+
+def fit_single_gaussian(hist, fit_name, fit_min, fit_max):
+    fit = ROOT.TF1(fit_name, "gaus", fit_min, fit_max)
+
+    entries = hist.GetEntries()
+    result = None
+    mean = sigma = mean_err = sigma_err = 0.0
+    chi2 = chi2_ndf = 0.0
+    ndf = 0
+    fit_status = -1
+
+    if entries > 5:
+        result = hist.Fit(fit, "QSR")
+        if result:
+            fit_status = int(result.Status())
+        mean = fit.GetParameter(1)
+        sigma = abs(fit.GetParameter(2))
+        mean_err = fit.GetParError(1)
+        sigma_err = fit.GetParError(2)
+        chi2 = fit.GetChisquare()
+        ndf = fit.GetNDF()
+        chi2_ndf = chi2 / ndf if ndf > 0 else 0.0
+
+    return {
+        "fit": fit,
+        "result": result,
+        "entries": entries,
+        "fit_status": fit_status,
+        "mean": mean,
+        "mean_err": mean_err,
+        "sigma": sigma,
+        "sigma_err": sigma_err,
+        "chi2": chi2,
+        "ndf": ndf,
+        "chi2_ndf": chi2_ndf,
+    }
+
+
+def fit_double_gaussian(hist, fit_name, fit_min, fit_max):
+    entries = hist.GetEntries()
+    fit = ROOT.TF1(fit_name, "gaus(0) + gaus(3)", fit_min, fit_max)
+    fit.SetLineColor(ROOT.kBlue + 1)
+
+    result = None
+    fit_status = -1
+    mean = mean_err = 0.0
+    sigma_eff = sigma_eff_err = 0.0
+    sigma_core = sigma_core_err = 0.0
+    sigma_tail = sigma_tail_err = 0.0
+    frac_core = frac_core_err = 0.0
+    chi2 = chi2_ndf = 0.0
+    ndf = 0
+
+    if entries <= 10:
+        return {
+            "fit": fit,
+            "result": result,
+            "entries": entries,
+            "fit_status": fit_status,
+            "mean": mean,
+            "mean_err": mean_err,
+            "sigma_eff": sigma_eff,
+            "sigma_eff_err": sigma_eff_err,
+            "sigma_core": sigma_core,
+            "sigma_core_err": sigma_core_err,
+            "sigma_tail": sigma_tail,
+            "sigma_tail_err": sigma_tail_err,
+            "frac_core": frac_core,
+            "frac_core_err": frac_core_err,
+            "chi2": chi2,
+            "ndf": ndf,
+            "chi2_ndf": chi2_ndf,
+        }
+
+    hist_mean = hist.GetMean()
+    hist_rms = max(hist.GetRMS(), 1e-4)
+    hist_max = max(hist.GetMaximum(), 1.0)
+    core_sigma_guess = max(0.5 * hist_rms, 1e-4)
+    tail_sigma_guess = max(1.5 * hist_rms, core_sigma_guess * 1.2)
+
+    fit.SetParNames("A1", "mean1", "sigma1", "A2", "mean2", "sigma2")
+    fit.SetParameters(0.7 * hist_max, hist_mean, core_sigma_guess, 0.3 * hist_max, hist_mean, tail_sigma_guess)
+    fit.SetParLimits(0, 0.0, max(10.0 * hist_max, 1.0))
+    fit.SetParLimits(1, fit_min, fit_max)
+    fit.SetParLimits(2, 1e-4, max(hist_rms * 5.0, (fit_max - fit_min)))
+    fit.SetParLimits(3, 0.0, max(10.0 * hist_max, 1.0))
+    fit.SetParLimits(4, fit_min, fit_max)
+    fit.SetParLimits(5, 1e-4, max(hist_rms * 8.0, (fit_max - fit_min)))
+
+    result = hist.Fit(fit, "QSR")
+    if result:
+        fit_status = int(result.Status())
+
+    amp1 = fit.GetParameter(0)
+    mean1 = fit.GetParameter(1)
+    sigma1 = abs(fit.GetParameter(2))
+    amp2 = fit.GetParameter(3)
+    mean2 = fit.GetParameter(4)
+    sigma2 = abs(fit.GetParameter(5))
+
+    err_mean1 = fit.GetParError(1)
+    err_sigma1 = fit.GetParError(2)
+    err_mean2 = fit.GetParError(4)
+    err_sigma2 = fit.GetParError(5)
+    err_amp1 = fit.GetParError(0)
+    err_amp2 = fit.GetParError(3)
+
+    # Report the narrower component as the core to keep outputs stable across bins.
+    if sigma1 <= sigma2:
+        core_amp, core_mean, core_sigma = amp1, mean1, sigma1
+        tail_amp, tail_mean, tail_sigma = amp2, mean2, sigma2
+        core_mean_err, core_sigma_err = err_mean1, err_sigma1
+        tail_mean_err, tail_sigma_err = err_mean2, err_sigma2
+        core_amp_err, tail_amp_err = err_amp1, err_amp2
+    else:
+        core_amp, core_mean, core_sigma = amp2, mean2, sigma2
+        tail_amp, tail_mean, tail_sigma = amp1, mean1, sigma1
+        core_mean_err, core_sigma_err = err_mean2, err_sigma2
+        tail_mean_err, tail_sigma_err = err_mean1, err_sigma1
+        core_amp_err, tail_amp_err = err_amp2, err_amp1
+
+    total_amp = core_amp + tail_amp
+    if total_amp > 0.0:
+        frac_core = core_amp / total_amp
+        frac_tail = tail_amp / total_amp
+    else:
+        frac_core = 0.0
+        frac_tail = 0.0
+
+    mean = frac_core * core_mean + frac_tail * tail_mean
+    second_moment = (
+        frac_core * (core_sigma ** 2 + core_mean ** 2)
+        + frac_tail * (tail_sigma ** 2 + tail_mean ** 2)
+    )
+    variance = max(second_moment - mean ** 2, 0.0)
+    sigma_eff = variance ** 0.5
+
+    if total_amp > 0.0:
+        frac_core_err = ((tail_amp * core_amp_err) ** 2 + (core_amp * tail_amp_err) ** 2) ** 0.5 / (total_amp ** 2)
+    else:
+        frac_core_err = 0.0
+
+    sigma_eff_err = (
+        (frac_core * core_sigma_err) ** 2
+        + (frac_tail * tail_sigma_err) ** 2
+    ) ** 0.5
+    mean_err = ((frac_core * core_mean_err) ** 2 + (frac_tail * tail_mean_err) ** 2) ** 0.5
+
+    chi2 = fit.GetChisquare()
+    ndf = fit.GetNDF()
+    chi2_ndf = chi2 / ndf if ndf > 0 else 0.0
+
+    return {
+        "fit": fit,
+        "result": result,
+        "entries": entries,
+        "fit_status": fit_status,
+        "mean": mean,
+        "mean_err": mean_err,
+        "sigma_eff": sigma_eff,
+        "sigma_eff_err": sigma_eff_err,
+        "sigma_core": core_sigma,
+        "sigma_core_err": core_sigma_err,
+        "sigma_tail": tail_sigma,
+        "sigma_tail_err": tail_sigma_err,
+        "frac_core": frac_core,
+        "frac_core_err": frac_core_err,
+        "chi2": chi2,
+        "ndf": ndf,
+        "chi2_ndf": chi2_ndf,
+    }
+
+
+def draw_graph_and_save(graph, canvas_name, out_file, out_path, logx):
+    canvas = ROOT.TCanvas(canvas_name, "", 1000, 750)
+    canvas.SetGrid()
+    if logx:
+        canvas.SetLogx()
+    canvas.SetLeftMargin(0.18)
+    graph.Draw("AP")
+    out_file.cd()
+    graph.Write()
+    canvas.SaveAs(out_path)
+
+
 # ============================================================
 # Plot and fit
 # ============================================================
 def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max, out_file, logx=True):
     means, mean_errs = [], []
     sigmas, sigma_errs = [], []
-    chi2_vals, ndf_vals, chi2ndf_vals = [], [], []
+    chi2ndf_vals = []
+    dg_means, dg_mean_errs = [], []
+    dg_sigma_eff, dg_sigma_eff_errs = [], []
+    dg_sigma_core, dg_sigma_core_errs = [], []
+    dg_sigma_tail, dg_sigma_tail_errs = [], []
+    dg_frac_core, dg_frac_core_errs = [], []
+    dg_chi2ndf_vals = []
     centers, halfwidths = [], []
     csv_rows = []
+    double_csv_rows = []
 
     canvas_all = ROOT.TCanvas(f"All_plots_{bin_type}", f"{bin_type} Histograms", 1500, 1000)
+    canvas_all_double = ROOT.TCanvas(f"All_plots_{bin_type}_double", f"{bin_type} Histograms Double", 1500, 1000)
     n = len(hlist)
     nx = 3
     ny = (n + nx - 1) // nx
     canvas_all.Divide(nx, ny)
+    canvas_all_double.Divide(nx, ny)
 
     for i, (low, high, hptr) in enumerate(hlist):
         h = hptr.GetValue()
@@ -194,38 +403,56 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         halfwidths.append(0.5 * (high - low))
 
         c = ROOT.TCanvas(f"c_{bin_type}_{i}", f"{bin_type}_{low}_{high}", 800, 600)
+        c_double = ROOT.TCanvas(f"c_{bin_type}_{i}_double", f"{bin_type}_{low}_{high}_double", 800, 600)
         c.SetGrid()
+        c_double.SetGrid()
 
-        fit = ROOT.TF1(f"gauss_{bin_type}_{i}", "gaus", res_min, res_max)
+        single_result = fit_single_gaussian(h, f"gauss_{bin_type}_{i}", res_min, res_max)
+        double_result = fit_double_gaussian(h, f"double_gauss_{bin_type}_{i}", res_min, res_max)
 
-        entries = h.GetEntries()
-        mean = sigma = mean_err = sigma_err = 0.0
-        chi2 = chi2_ndf = 0.0
-        ndf = 0
-
-        if entries > 5:
-            h.Fit(fit, "QSR")
-            mean = fit.GetParameter(1)
-            sigma = fit.GetParameter(2)
-            mean_err = fit.GetParError(1)
-            sigma_err = fit.GetParError(2)
-            chi2 = fit.GetChisquare()
-            ndf = fit.GetNDF()
-            chi2_ndf = chi2 / ndf if ndf > 0 else 0.0
+        entries = single_result["entries"]
+        fit = single_result["fit"]
+        mean = single_result["mean"]
+        sigma = single_result["sigma"]
+        mean_err = single_result["mean_err"]
+        sigma_err = single_result["sigma_err"]
+        chi2_ndf = single_result["chi2_ndf"]
+        dg_fit = double_result["fit"]
 
         means.append(mean)
         mean_errs.append(mean_err)
         sigmas.append(sigma)
         sigma_errs.append(sigma_err)
-        chi2_vals.append(chi2)
-        ndf_vals.append(float(ndf))
         chi2ndf_vals.append(chi2_ndf)
+
+        dg_means.append(double_result["mean"])
+        dg_mean_errs.append(double_result["mean_err"])
+        dg_sigma_eff.append(double_result["sigma_eff"])
+        dg_sigma_eff_errs.append(double_result["sigma_eff_err"])
+        dg_sigma_core.append(double_result["sigma_core"])
+        dg_sigma_core_errs.append(double_result["sigma_core_err"])
+        dg_sigma_tail.append(double_result["sigma_tail"])
+        dg_sigma_tail_errs.append(double_result["sigma_tail_err"])
+        dg_frac_core.append(double_result["frac_core"])
+        dg_frac_core_errs.append(double_result["frac_core_err"])
+        dg_chi2ndf_vals.append(double_result["chi2_ndf"])
 
         csv_rows.append([
             low, high, int(entries),
             mean, mean_err,
             sigma, sigma_err,
-            chi2, ndf, chi2_ndf
+            single_result["chi2"], single_result["ndf"], chi2_ndf
+        ])
+
+        double_csv_rows.append([
+            low, high, int(entries),
+            double_result["mean"], double_result["mean_err"],
+            double_result["sigma_eff"], double_result["sigma_eff_err"],
+            double_result["sigma_core"], double_result["sigma_core_err"],
+            double_result["sigma_tail"], double_result["sigma_tail_err"],
+            double_result["frac_core"], double_result["frac_core_err"],
+            double_result["chi2"], double_result["ndf"], double_result["chi2_ndf"],
+            double_result["fit_status"]
         ])
 
         h.SetStats(0)
@@ -241,8 +468,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
             leg.AddEntry(0, f"Entries = {int(entries)}", "")
             leg.AddEntry(0, f"Mean = {mean:.4f} #pm {mean_err:.4f}", "")
             leg.AddEntry(0, f"#sigma = {sigma:.4f} #pm {sigma_err:.4f}", "")
-            leg.AddEntry(0, f"#chi^2 = {chi2:.4f}", "")
-            leg.AddEntry(0, f"NDF = {int(ndf)}", "")
+            leg.AddEntry(0, f"#chi^2 = {single_result['chi2']:.4f}", "")
+            leg.AddEntry(0, f"NDF = {int(single_result['ndf'])}", "")
             leg.AddEntry(0, f"#chi^2/NDF = {chi2_ndf:.4f}", "")
             leg.Draw()
 
@@ -256,7 +483,35 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         if entries > 5:
             fit.Draw("same")
 
+        c_double.cd()
+        h.Draw()
+        h.GetYaxis().SetTitle("Events")
+        h.GetXaxis().SetTitle("q/p_{T} residual")
+
+        if entries > 10:
+            dg_fit.Draw("same")
+            leg_double = ROOT.TLegend(0.42, 0.42, 0.88, 0.84)
+            leg_double.SetFillStyle(0)
+            leg_double.SetBorderSize(0)
+            leg_double.AddEntry(0, f"Entries = {int(entries)}", "")
+            leg_double.AddEntry(0, f"Mean = {double_result['mean']:.4f} #pm {double_result['mean_err']:.4f}", "")
+            leg_double.AddEntry(0, f"#sigma_{{eff}} = {double_result['sigma_eff']:.4f} #pm {double_result['sigma_eff_err']:.4f}", "")
+            leg_double.AddEntry(0, f"#sigma_{{core}} = {double_result['sigma_core']:.4f} #pm {double_result['sigma_core_err']:.4f}", "")
+            leg_double.AddEntry(0, f"#sigma_{{tail}} = {double_result['sigma_tail']:.4f} #pm {double_result['sigma_tail_err']:.4f}", "")
+            leg_double.AddEntry(0, f"f_{{core}} = {double_result['frac_core']:.4f} #pm {double_result['frac_core_err']:.4f}", "")
+            leg_double.AddEntry(0, f"#chi^2/NDF = {double_result['chi2_ndf']:.4f}", "")
+            leg_double.Draw()
+
+        dg_fit.Write(f"fit_double_{bin_type}_{int(low)}_{int(high)}")
+        c_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}_double.png"))
+
+        canvas_all_double.cd(i + 1)
+        h.Draw()
+        if entries > 10:
+            dg_fit.Draw("same")
+
     canvas_all.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits.png"))
+    canvas_all_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits_double.png"))
 
     g_mean = ROOT.TGraphErrors(
         len(hlist),
@@ -269,16 +524,13 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
     g_mean.SetTitle(f"{bin_type} mean;{x_title};Mean of q/p_{{T}} relative residual")
     g_mean.SetMarkerStyle(8)
     g_mean.SetLineWidth(2)
-
-    c_mean = ROOT.TCanvas(f"c_mean_{bin_type}", "", 1000, 750)
-    c_mean.SetGrid()
-    if logx:
-        c_mean.SetLogx()
-    c_mean.SetLeftMargin(0.18)
-    g_mean.Draw("AP")
-    out_file.cd()
-    g_mean.Write()
-    c_mean.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total.png"))
+    draw_graph_and_save(
+        g_mean,
+        f"c_mean_{bin_type}",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total.png"),
+        logx
+    )
 
     g_sigma = ROOT.TGraphErrors(
         len(hlist),
@@ -291,16 +543,13 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
     g_sigma.SetTitle(f"{bin_type} sigma;{x_title};#sigma of q/p_{{T}} relative residual")
     g_sigma.SetMarkerStyle(8)
     g_sigma.SetLineWidth(2)
-
-    c_sigma = ROOT.TCanvas(f"c_sigma_{bin_type}", "", 1000, 750)
-    c_sigma.SetGrid()
-    if logx:
-        c_sigma.SetLogx()
-    c_sigma.SetLeftMargin(0.18)
-    g_sigma.Draw("AP")
-    out_file.cd()
-    g_sigma.Write()
-    c_sigma.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total.png"))
+    draw_graph_and_save(
+        g_sigma,
+        f"c_sigma_{bin_type}",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total.png"),
+        logx
+    )
 
     g_chi2ndf = ROOT.TGraphErrors(
         len(hlist),
@@ -313,19 +562,144 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
     g_chi2ndf.SetTitle(f"{bin_type} #chi^{{2}}/NDF;{x_title};#chi^{{2}}/NDF")
     g_chi2ndf.SetMarkerStyle(8)
     g_chi2ndf.SetLineWidth(2)
+    draw_graph_and_save(
+        g_chi2ndf,
+        f"c_chi2ndf_{bin_type}",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total.png"),
+        logx
+    )
 
-    c_chi2 = ROOT.TCanvas(f"c_chi2ndf_{bin_type}", "", 1000, 750)
-    c_chi2.SetGrid()
-    if logx:
-        c_chi2.SetLogx()
-    c_chi2.SetLeftMargin(0.18)
-    g_chi2ndf.Draw("AP")
-    out_file.cd()
-    g_chi2ndf.Write()
-    c_chi2.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total.png"))
+    g_double_mean = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(dg_means),
+        array_to_c(halfwidths),
+        array_to_c(dg_mean_errs),
+    )
+    g_double_mean.SetName(f"{bin_type}_mean_total_double")
+    g_double_mean.SetTitle(f"{bin_type} double-gaussian mean;{x_title};Mean of q/p_{{T}} relative residual")
+    g_double_mean.SetMarkerStyle(22)
+    g_double_mean.SetMarkerColor(ROOT.kBlue + 1)
+    g_double_mean.SetLineColor(ROOT.kBlue + 1)
+    g_double_mean.SetLineWidth(2)
+    draw_graph_and_save(
+        g_double_mean,
+        f"c_mean_{bin_type}_double",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total_double.png"),
+        logx
+    )
+
+    g_double_sigma_eff = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(dg_sigma_eff),
+        array_to_c(halfwidths),
+        array_to_c(dg_sigma_eff_errs),
+    )
+    g_double_sigma_eff.SetName(f"{bin_type}_sigma_eff_total_double")
+    g_double_sigma_eff.SetTitle(f"{bin_type} double-gaussian effective sigma;{x_title};#sigma_{{eff}} of q/p_{{T}} relative residual")
+    g_double_sigma_eff.SetMarkerStyle(22)
+    g_double_sigma_eff.SetMarkerColor(ROOT.kBlue + 1)
+    g_double_sigma_eff.SetLineColor(ROOT.kBlue + 1)
+    g_double_sigma_eff.SetLineWidth(2)
+    draw_graph_and_save(
+        g_double_sigma_eff,
+        f"c_sigmaeff_{bin_type}_double",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_eff_total_double.png"),
+        logx
+    )
+
+    g_double_sigma_core = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(dg_sigma_core),
+        array_to_c(halfwidths),
+        array_to_c(dg_sigma_core_errs),
+    )
+    g_double_sigma_core.SetName(f"{bin_type}_sigma_core_total_double")
+    g_double_sigma_core.SetTitle(f"{bin_type} double-gaussian core sigma;{x_title};#sigma_{{core}} of q/p_{{T}} relative residual")
+    g_double_sigma_core.SetMarkerStyle(23)
+    g_double_sigma_core.SetMarkerColor(ROOT.kGreen + 2)
+    g_double_sigma_core.SetLineColor(ROOT.kGreen + 2)
+    g_double_sigma_core.SetLineWidth(2)
+    draw_graph_and_save(
+        g_double_sigma_core,
+        f"c_sigmacore_{bin_type}_double",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_core_total_double.png"),
+        logx
+    )
+
+    g_double_sigma_tail = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(dg_sigma_tail),
+        array_to_c(halfwidths),
+        array_to_c(dg_sigma_tail_errs),
+    )
+    g_double_sigma_tail.SetName(f"{bin_type}_sigma_tail_total_double")
+    g_double_sigma_tail.SetTitle(f"{bin_type} double-gaussian tail sigma;{x_title};#sigma_{{tail}} of q/p_{{T}} relative residual")
+    g_double_sigma_tail.SetMarkerStyle(21)
+    g_double_sigma_tail.SetMarkerColor(ROOT.kRed + 1)
+    g_double_sigma_tail.SetLineColor(ROOT.kRed + 1)
+    g_double_sigma_tail.SetLineWidth(2)
+    draw_graph_and_save(
+        g_double_sigma_tail,
+        f"c_sigmatail_{bin_type}_double",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_tail_total_double.png"),
+        logx
+    )
+
+    g_double_frac_core = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(dg_frac_core),
+        array_to_c(halfwidths),
+        array_to_c(dg_frac_core_errs),
+    )
+    g_double_frac_core.SetName(f"{bin_type}_frac_core_total_double")
+    g_double_frac_core.SetTitle(f"{bin_type} double-gaussian core fraction;{x_title};f_{{core}}")
+    g_double_frac_core.SetMarkerStyle(20)
+    g_double_frac_core.SetMarkerColor(ROOT.kMagenta + 2)
+    g_double_frac_core.SetLineColor(ROOT.kMagenta + 2)
+    g_double_frac_core.SetLineWidth(2)
+    draw_graph_and_save(
+        g_double_frac_core,
+        f"c_fraccore_{bin_type}_double",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_frac_core_total_double.png"),
+        logx
+    )
+
+    g_double_chi2ndf = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(dg_chi2ndf_vals),
+        array_to_c(halfwidths),
+        array_to_c([0.0] * len(hlist)),
+    )
+    g_double_chi2ndf.SetName(f"{bin_type}_chi2ndf_total_double")
+    g_double_chi2ndf.SetTitle(f"{bin_type} double-gaussian #chi^{{2}}/NDF;{x_title};#chi^{{2}}/NDF")
+    g_double_chi2ndf.SetMarkerStyle(22)
+    g_double_chi2ndf.SetMarkerColor(ROOT.kBlue + 1)
+    g_double_chi2ndf.SetLineColor(ROOT.kBlue + 1)
+    g_double_chi2ndf.SetLineWidth(2)
+    draw_graph_and_save(
+        g_double_chi2ndf,
+        f"c_chi2ndf_{bin_type}_double",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total_double.png"),
+        logx
+    )
 
     csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary.csv")
     write_fit_csv(csv_path, csv_rows)
+    double_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary_double.csv")
+    write_double_fit_csv(double_csv_path, double_csv_rows)
 
 
 def make_overlay_plot(h_tag, h_probe, out_file, out_png, name="overlay"):
