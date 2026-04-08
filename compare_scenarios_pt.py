@@ -142,30 +142,30 @@ def draw_overlay(graphs, labels, title, ytitle, out_png, bin_type):
     c.SaveAs(out_png)
 
 
+def load_scenario_graphs(files, source_name, bin_type, suffix):
+    graphs = []
+    for scenario in ["baseline", "tagonly", "tagprobe"]:
+        graph = files[scenario].Get(source_name)
+        if not graph:
+            raise RuntimeError(f"Could not find {source_name} in one or more files")
+        graphs.append(graph.Clone(f"{bin_type}_{suffix}_{scenario}"))
+    return graphs
+
+
 def compare_family(files, outdir, bin_type):
     mean_name = f"{bin_type}_mean_total"
     sigma_name = f"{bin_type}_sigma_total"
+    hybrid_mean_name = f"{bin_type}_mean_total_hybrid"
+    hybrid_sigma_name = f"{bin_type}_sigma_total_hybrid"
 
-    g_mean_baseline = files["baseline"].Get(mean_name)
-    g_mean_tagonly = files["tagonly"].Get(mean_name)
-    g_mean_tagprobe = files["tagprobe"].Get(mean_name)
-
-    g_sigma_baseline = files["baseline"].Get(sigma_name)
-    g_sigma_tagonly = files["tagonly"].Get(sigma_name)
-    g_sigma_tagprobe = files["tagprobe"].Get(sigma_name)
-
-    if not all([g_mean_baseline, g_mean_tagonly, g_mean_tagprobe]):
-        raise RuntimeError(f"Could not find {mean_name} in one or more files")
-    if not all([g_sigma_baseline, g_sigma_tagonly, g_sigma_tagprobe]):
-        raise RuntimeError(f"Could not find {sigma_name} in one or more files")
-
-    g_mean_baseline = g_mean_baseline.Clone(f"{bin_type}_mean_baseline")
-    g_mean_tagonly = g_mean_tagonly.Clone(f"{bin_type}_mean_tagonly")
-    g_mean_tagprobe = g_mean_tagprobe.Clone(f"{bin_type}_mean_tagprobe")
-
-    g_sigma_baseline = g_sigma_baseline.Clone(f"{bin_type}_sigma_baseline")
-    g_sigma_tagonly = g_sigma_tagonly.Clone(f"{bin_type}_sigma_tagonly")
-    g_sigma_tagprobe = g_sigma_tagprobe.Clone(f"{bin_type}_sigma_tagprobe")
+    g_mean_baseline, g_mean_tagonly, g_mean_tagprobe = load_scenario_graphs(files, mean_name, bin_type, "mean")
+    g_sigma_baseline, g_sigma_tagonly, g_sigma_tagprobe = load_scenario_graphs(files, sigma_name, bin_type, "sigma")
+    g_hybrid_mean_baseline, g_hybrid_mean_tagonly, g_hybrid_mean_tagprobe = load_scenario_graphs(
+        files, hybrid_mean_name, bin_type, "mean_hybrid"
+    )
+    g_hybrid_sigma_baseline, g_hybrid_sigma_tagonly, g_hybrid_sigma_tagprobe = load_scenario_graphs(
+        files, hybrid_sigma_name, bin_type, "sigma_hybrid"
+    )
 
     style_graph(g_mean_baseline, ROOT.kBlack, 20)
     style_graph(g_mean_tagonly, ROOT.kRed + 1, 21)
@@ -174,6 +174,12 @@ def compare_family(files, outdir, bin_type):
     style_graph(g_sigma_baseline, ROOT.kBlack, 20)
     style_graph(g_sigma_tagonly, ROOT.kRed + 1, 21)
     style_graph(g_sigma_tagprobe, ROOT.kBlue + 1, 22)
+    style_graph(g_hybrid_mean_baseline, ROOT.kBlack, 20)
+    style_graph(g_hybrid_mean_tagonly, ROOT.kRed + 1, 21)
+    style_graph(g_hybrid_mean_tagprobe, ROOT.kBlue + 1, 22)
+    style_graph(g_hybrid_sigma_baseline, ROOT.kBlack, 20)
+    style_graph(g_hybrid_sigma_tagonly, ROOT.kRed + 1, 21)
+    style_graph(g_hybrid_sigma_tagprobe, ROOT.kBlue + 1, 22)
 
     labels = [
         "Baseline",
@@ -199,10 +205,38 @@ def compare_family(files, outdir, bin_type):
         bin_type
     )
 
-    return (
-        g_mean_baseline, g_mean_tagonly, g_mean_tagprobe,
-        g_sigma_baseline, g_sigma_tagonly, g_sigma_tagprobe
+    draw_overlay(
+        [g_hybrid_mean_baseline, g_hybrid_mean_tagonly, g_hybrid_mean_tagprobe],
+        labels,
+        f"{bin_type} hybrid mean scenario comparison",
+        "Mean of q/p_{T} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean_hybrid_scenarios.png"),
+        bin_type
     )
+
+    draw_overlay(
+        [g_hybrid_sigma_baseline, g_hybrid_sigma_tagonly, g_hybrid_sigma_tagprobe],
+        labels,
+        f"{bin_type} hybrid sigma scenario comparison",
+        "#sigma of q/p_{T} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma_hybrid_scenarios.png"),
+        bin_type
+    )
+
+    return {
+        "mean_baseline": g_mean_baseline,
+        "mean_tagonly": g_mean_tagonly,
+        "mean_tagprobe": g_mean_tagprobe,
+        "sigma_baseline": g_sigma_baseline,
+        "sigma_tagonly": g_sigma_tagonly,
+        "sigma_tagprobe": g_sigma_tagprobe,
+        "mean_hybrid_baseline": g_hybrid_mean_baseline,
+        "mean_hybrid_tagonly": g_hybrid_mean_tagonly,
+        "mean_hybrid_tagprobe": g_hybrid_mean_tagprobe,
+        "sigma_hybrid_baseline": g_hybrid_sigma_baseline,
+        "sigma_hybrid_tagonly": g_hybrid_sigma_tagonly,
+        "sigma_hybrid_tagprobe": g_hybrid_sigma_tagprobe,
+    }
 
 
 def main():
@@ -230,18 +264,18 @@ def main():
     for bin_type in ["pt", "dz", "dxy"]:
         graphs = compare_family(files, args.outdir, bin_type)
         out_root.cd()
-
-        (
-            g_mean_baseline, g_mean_tagonly, g_mean_tagprobe,
-            g_sigma_baseline, g_sigma_tagonly, g_sigma_tagprobe
-        ) = graphs
-
-        g_mean_baseline.Write(f"{bin_type}_mean_baseline")
-        g_mean_tagonly.Write(f"{bin_type}_mean_tagonly")
-        g_mean_tagprobe.Write(f"{bin_type}_mean_tagprobe")
-        g_sigma_baseline.Write(f"{bin_type}_sigma_baseline")
-        g_sigma_tagonly.Write(f"{bin_type}_sigma_tagonly")
-        g_sigma_tagprobe.Write(f"{bin_type}_sigma_tagprobe")
+        graphs["mean_baseline"].Write(f"{bin_type}_mean_baseline")
+        graphs["mean_tagonly"].Write(f"{bin_type}_mean_tagonly")
+        graphs["mean_tagprobe"].Write(f"{bin_type}_mean_tagprobe")
+        graphs["sigma_baseline"].Write(f"{bin_type}_sigma_baseline")
+        graphs["sigma_tagonly"].Write(f"{bin_type}_sigma_tagonly")
+        graphs["sigma_tagprobe"].Write(f"{bin_type}_sigma_tagprobe")
+        graphs["mean_hybrid_baseline"].Write(f"{bin_type}_mean_hybrid_baseline")
+        graphs["mean_hybrid_tagonly"].Write(f"{bin_type}_mean_hybrid_tagonly")
+        graphs["mean_hybrid_tagprobe"].Write(f"{bin_type}_mean_hybrid_tagprobe")
+        graphs["sigma_hybrid_baseline"].Write(f"{bin_type}_sigma_hybrid_baseline")
+        graphs["sigma_hybrid_tagonly"].Write(f"{bin_type}_sigma_hybrid_tagonly")
+        graphs["sigma_hybrid_tagprobe"].Write(f"{bin_type}_sigma_hybrid_tagprobe")
 
     out_root.Close()
 

@@ -155,6 +155,8 @@ def load_comparison_graphs(f_mc, f_data, source_name, mc_name, data_name):
 def compare_family(f_mc, f_data, outdir, bin_type):
     mean_name = f"{bin_type}_mean_total"
     sigma_name = f"{bin_type}_sigma_total"
+    hybrid_mean_name = f"{bin_type}_mean_total_hybrid"
+    hybrid_sigma_name = f"{bin_type}_sigma_total_hybrid"
     double_mean_name = f"{bin_type}_mean_total_double"
     sigma_eff_name = f"{bin_type}_sigma_eff_total_double"
 
@@ -163,6 +165,12 @@ def compare_family(f_mc, f_data, outdir, bin_type):
     )
     g_sigma_mc, g_sigma_data = load_comparison_graphs(
         f_mc, f_data, sigma_name, f"{bin_type}_sigma_mc", f"{bin_type}_sigma_data"
+    )
+    g_hybrid_mean_mc, g_hybrid_mean_data = load_comparison_graphs(
+        f_mc, f_data, hybrid_mean_name, f"{bin_type}_mean_hybrid_mc", f"{bin_type}_mean_hybrid_data"
+    )
+    g_hybrid_sigma_mc, g_hybrid_sigma_data = load_comparison_graphs(
+        f_mc, f_data, hybrid_sigma_name, f"{bin_type}_sigma_hybrid_mc", f"{bin_type}_sigma_hybrid_data"
     )
     g_double_mean_mc, g_double_mean_data = load_comparison_graphs(
         f_mc, f_data, double_mean_name, f"{bin_type}_mean_double_mc", f"{bin_type}_mean_double_data"
@@ -175,6 +183,10 @@ def compare_family(f_mc, f_data, outdir, bin_type):
     style_graph(g_mean_data, ROOT.kBlue + 1, 21)
     style_graph(g_sigma_mc, ROOT.kRed + 1, 20)
     style_graph(g_sigma_data, ROOT.kBlue + 1, 21)
+    style_graph(g_hybrid_mean_mc, ROOT.kRed + 1, 20)
+    style_graph(g_hybrid_mean_data, ROOT.kBlue + 1, 21)
+    style_graph(g_hybrid_sigma_mc, ROOT.kRed + 1, 20)
+    style_graph(g_hybrid_sigma_data, ROOT.kBlue + 1, 21)
     style_graph(g_double_mean_mc, ROOT.kRed + 1, 20)
     style_graph(g_double_mean_data, ROOT.kBlue + 1, 21)
     style_graph(g_sigma_eff_mc, ROOT.kRed + 1, 20)
@@ -195,6 +207,24 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} sigma comparison",
         "#sigma of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_sigma_mc_vs_data.png"),
+        bin_type
+    )
+
+    draw_overlay(
+        g_hybrid_mean_mc,
+        g_hybrid_mean_data,
+        f"{bin_type} hybrid mean comparison",
+        "Mean of q/p_{T} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean_hybrid_mc_vs_data.png"),
+        bin_type
+    )
+
+    draw_overlay(
+        g_hybrid_sigma_mc,
+        g_hybrid_sigma_data,
+        f"{bin_type} hybrid sigma comparison",
+        "#sigma of q/p_{T} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma_hybrid_mc_vs_data.png"),
         bin_type
     )
 
@@ -221,6 +251,10 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         "mean_data": g_mean_data,
         "sigma_mc": g_sigma_mc,
         "sigma_data": g_sigma_data,
+        "mean_hybrid_mc": g_hybrid_mean_mc,
+        "mean_hybrid_data": g_hybrid_mean_data,
+        "sigma_hybrid_mc": g_hybrid_sigma_mc,
+        "sigma_hybrid_data": g_hybrid_sigma_data,
         "mean_double_mc": g_double_mean_mc,
         "mean_double_data": g_double_mean_data,
         "sigma_eff_double_mc": g_sigma_eff_mc,
@@ -254,6 +288,10 @@ def main():
         graphs["mean_data"].Write(f"{bin_type}_mean_data")
         graphs["sigma_mc"].Write(f"{bin_type}_sigma_mc")
         graphs["sigma_data"].Write(f"{bin_type}_sigma_data")
+        graphs["mean_hybrid_mc"].Write(f"{bin_type}_mean_hybrid_mc")
+        graphs["mean_hybrid_data"].Write(f"{bin_type}_mean_hybrid_data")
+        graphs["sigma_hybrid_mc"].Write(f"{bin_type}_sigma_hybrid_mc")
+        graphs["sigma_hybrid_data"].Write(f"{bin_type}_sigma_hybrid_data")
         graphs["mean_double_mc"].Write(f"{bin_type}_mean_double_mc")
         graphs["mean_double_data"].Write(f"{bin_type}_mean_double_data")
         graphs["sigma_eff_double_mc"].Write(f"{bin_type}_sigma_eff_double_mc")

@@ -6,6 +6,7 @@ import glob
 import argparse
 import array
 import csv
+import math
 
 ROOT.gStyle.SetOptStat(0)
 
@@ -15,6 +16,8 @@ ROOT.gStyle.SetOptStat(0)
 DEFAULT_PT_BINS = [20.0, 30.0, 40.0, 50.0, 65.0, 85.0, 120.0, 200.0, 400.0, 1000.0]
 DEFAULT_DZ_BINS = [1.0,5.0, 10.0, 20.0, 30.0, 45.0, 60.0,100,150.0]
 DEFAULT_DXY_BINS = [1.0,5.0, 10.0, 20.0, 30.0, 40.0,60.0, 80.0]
+HYBRID_DOUBLE_MIN_ENTRIES = 25
+HYBRID_MAX_REL_SIGMA_ERR = 0.5
 
 
 # ============================================================
@@ -184,6 +187,20 @@ def write_double_fit_csv(csv_path, rows):
             "frac_core", "frac_core_err",
             "chi2", "ndf", "chi2_ndf",
             "fit_status"
+        ])
+        writer.writerows(rows)
+
+
+def write_hybrid_fit_csv(csv_path, rows):
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "bin_low", "bin_high", "entries",
+            "mean", "mean_err",
+            "sigma", "sigma_err",
+            "chi2", "ndf", "chi2_ndf",
+            "fit_model", "selection_reason",
+            "single_fit_status", "double_fit_status"
         ])
         writer.writerows(rows)
 
@@ -360,6 +377,76 @@ def fit_double_gaussian(hist, fit_name, fit_min, fit_max):
     }
 
 
+def relative_error(value, error):
+    if not math.isfinite(value) or value == 0.0:
+        return float("inf")
+    if not math.isfinite(error) or error < 0.0:
+        return float("inf")
+    return abs(error / value)
+
+
+def choose_hybrid_result(single_result, double_result):
+    reason = "double"
+    use_double = True
+
+    if double_result["entries"] < HYBRID_DOUBLE_MIN_ENTRIES:
+        use_double = False
+        reason = "low_entries"
+    elif double_result["fit_status"] != 0:
+        use_double = False
+        reason = "fit_status"
+    elif double_result["ndf"] <= 0:
+        use_double = False
+        reason = "ndf"
+    elif not math.isfinite(double_result["sigma_eff"]) or double_result["sigma_eff"] <= 0.0:
+        use_double = False
+        reason = "sigma_eff"
+    elif relative_error(double_result["sigma_eff"], double_result["sigma_eff_err"]) > HYBRID_MAX_REL_SIGMA_ERR:
+        use_double = False
+        reason = "sigma_eff_err"
+    elif not math.isfinite(double_result["frac_core"]) or not (0.0 < double_result["frac_core"] < 1.0):
+        use_double = False
+        reason = "frac_core"
+    elif (
+        not math.isfinite(double_result["sigma_core"]) or double_result["sigma_core"] <= 0.0
+        or not math.isfinite(double_result["sigma_tail"]) or double_result["sigma_tail"] <= 0.0
+    ):
+        use_double = False
+        reason = "component_sigma"
+    elif double_result["sigma_tail"] < double_result["sigma_core"]:
+        use_double = False
+        reason = "component_order"
+
+    if use_double:
+        return {
+            "fit": double_result["fit"],
+            "entries": double_result["entries"],
+            "mean": double_result["mean"],
+            "mean_err": double_result["mean_err"],
+            "sigma": double_result["sigma_eff"],
+            "sigma_err": double_result["sigma_eff_err"],
+            "chi2": double_result["chi2"],
+            "ndf": double_result["ndf"],
+            "chi2_ndf": double_result["chi2_ndf"],
+            "fit_model": "double",
+            "selection_reason": reason,
+        }
+
+    return {
+        "fit": single_result["fit"],
+        "entries": single_result["entries"],
+        "mean": single_result["mean"],
+        "mean_err": single_result["mean_err"],
+        "sigma": single_result["sigma"],
+        "sigma_err": single_result["sigma_err"],
+        "chi2": single_result["chi2"],
+        "ndf": single_result["ndf"],
+        "chi2_ndf": single_result["chi2_ndf"],
+        "fit_model": "single",
+        "selection_reason": reason,
+    }
+
+
 def draw_graph_and_save(graph, canvas_name, out_file, out_path, logx):
     canvas = ROOT.TCanvas(canvas_name, "", 1000, 750)
     canvas.SetGrid()
@@ -379,6 +466,9 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
     means, mean_errs = [], []
     sigmas, sigma_errs = [], []
     chi2ndf_vals = []
+    hybrid_means, hybrid_mean_errs = [], []
+    hybrid_sigmas, hybrid_sigma_errs = [], []
+    hybrid_chi2ndf_vals = []
     dg_means, dg_mean_errs = [], []
     dg_sigma_eff, dg_sigma_eff_errs = [], []
     dg_sigma_core, dg_sigma_core_errs = [], []
@@ -387,14 +477,17 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
     dg_chi2ndf_vals = []
     centers, halfwidths = [], []
     csv_rows = []
+    hybrid_csv_rows = []
     double_csv_rows = []
 
     canvas_all = ROOT.TCanvas(f"All_plots_{bin_type}", f"{bin_type} Histograms", 1500, 1000)
+    canvas_all_hybrid = ROOT.TCanvas(f"All_plots_{bin_type}_hybrid", f"{bin_type} Histograms Hybrid", 1500, 1000)
     canvas_all_double = ROOT.TCanvas(f"All_plots_{bin_type}_double", f"{bin_type} Histograms Double", 1500, 1000)
     n = len(hlist)
     nx = 3
     ny = (n + nx - 1) // nx
     canvas_all.Divide(nx, ny)
+    canvas_all_hybrid.Divide(nx, ny)
     canvas_all_double.Divide(nx, ny)
 
     for i, (low, high, hptr) in enumerate(hlist):
@@ -403,12 +496,15 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         halfwidths.append(0.5 * (high - low))
 
         c = ROOT.TCanvas(f"c_{bin_type}_{i}", f"{bin_type}_{low}_{high}", 800, 600)
+        c_hybrid = ROOT.TCanvas(f"c_{bin_type}_{i}_hybrid", f"{bin_type}_{low}_{high}_hybrid", 800, 600)
         c_double = ROOT.TCanvas(f"c_{bin_type}_{i}_double", f"{bin_type}_{low}_{high}_double", 800, 600)
         c.SetGrid()
+        c_hybrid.SetGrid()
         c_double.SetGrid()
 
         single_result = fit_single_gaussian(h, f"gauss_{bin_type}_{i}", res_min, res_max)
         double_result = fit_double_gaussian(h, f"double_gauss_{bin_type}_{i}", res_min, res_max)
+        hybrid_result = choose_hybrid_result(single_result, double_result)
 
         entries = single_result["entries"]
         fit = single_result["fit"]
@@ -417,6 +513,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         mean_err = single_result["mean_err"]
         sigma_err = single_result["sigma_err"]
         chi2_ndf = single_result["chi2_ndf"]
+        hybrid_fit = hybrid_result["fit"]
         dg_fit = double_result["fit"]
 
         means.append(mean)
@@ -424,6 +521,12 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         sigmas.append(sigma)
         sigma_errs.append(sigma_err)
         chi2ndf_vals.append(chi2_ndf)
+
+        hybrid_means.append(hybrid_result["mean"])
+        hybrid_mean_errs.append(hybrid_result["mean_err"])
+        hybrid_sigmas.append(hybrid_result["sigma"])
+        hybrid_sigma_errs.append(hybrid_result["sigma_err"])
+        hybrid_chi2ndf_vals.append(hybrid_result["chi2_ndf"])
 
         dg_means.append(double_result["mean"])
         dg_mean_errs.append(double_result["mean_err"])
@@ -442,6 +545,15 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
             mean, mean_err,
             sigma, sigma_err,
             single_result["chi2"], single_result["ndf"], chi2_ndf
+        ])
+
+        hybrid_csv_rows.append([
+            low, high, int(entries),
+            hybrid_result["mean"], hybrid_result["mean_err"],
+            hybrid_result["sigma"], hybrid_result["sigma_err"],
+            hybrid_result["chi2"], hybrid_result["ndf"], hybrid_result["chi2_ndf"],
+            hybrid_result["fit_model"], hybrid_result["selection_reason"],
+            single_result["fit_status"], double_result["fit_status"]
         ])
 
         double_csv_rows.append([
@@ -483,6 +595,37 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         if entries > 5:
             fit.Draw("same")
 
+        c_hybrid.cd()
+        h.Draw()
+        h.GetYaxis().SetTitle("Events")
+        h.GetXaxis().SetTitle("q/p_{T} residual")
+
+        if hybrid_result["fit_model"] == "double" and entries > 10:
+            hybrid_fit.Draw("same")
+        elif entries > 5:
+            hybrid_fit.Draw("same")
+
+        leg_hybrid = ROOT.TLegend(0.42, 0.42, 0.88, 0.84)
+        leg_hybrid.SetFillStyle(0)
+        leg_hybrid.SetBorderSize(0)
+        leg_hybrid.AddEntry(0, f"Entries = {int(entries)}", "")
+        leg_hybrid.AddEntry(0, f"Model = {hybrid_result['fit_model']}", "")
+        leg_hybrid.AddEntry(0, f"Reason = {hybrid_result['selection_reason']}", "")
+        leg_hybrid.AddEntry(0, f"Mean = {hybrid_result['mean']:.4f} #pm {hybrid_result['mean_err']:.4f}", "")
+        leg_hybrid.AddEntry(0, f"#sigma = {hybrid_result['sigma']:.4f} #pm {hybrid_result['sigma_err']:.4f}", "")
+        leg_hybrid.AddEntry(0, f"#chi^2/NDF = {hybrid_result['chi2_ndf']:.4f}", "")
+        leg_hybrid.Draw()
+
+        hybrid_fit.Write(f"fit_hybrid_{bin_type}_{int(low)}_{int(high)}")
+        c_hybrid.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}_hybrid.png"))
+
+        canvas_all_hybrid.cd(i + 1)
+        h.Draw()
+        if hybrid_result["fit_model"] == "double" and entries > 10:
+            hybrid_fit.Draw("same")
+        elif entries > 5:
+            hybrid_fit.Draw("same")
+
         c_double.cd()
         h.Draw()
         h.GetYaxis().SetTitle("Events")
@@ -511,6 +654,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
             dg_fit.Draw("same")
 
     canvas_all.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits.png"))
+    canvas_all_hybrid.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits_hybrid.png"))
     canvas_all_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits_double.png"))
 
     g_mean = ROOT.TGraphErrors(
@@ -567,6 +711,69 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         f"c_chi2ndf_{bin_type}",
         out_file,
         os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total.png"),
+        logx
+    )
+
+    g_hybrid_mean = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(hybrid_means),
+        array_to_c(halfwidths),
+        array_to_c(hybrid_mean_errs),
+    )
+    g_hybrid_mean.SetName(f"{bin_type}_mean_total_hybrid")
+    g_hybrid_mean.SetTitle(f"{bin_type} hybrid mean;{x_title};Mean of q/p_{{T}} relative residual")
+    g_hybrid_mean.SetMarkerStyle(29)
+    g_hybrid_mean.SetMarkerColor(ROOT.kOrange + 7)
+    g_hybrid_mean.SetLineColor(ROOT.kOrange + 7)
+    g_hybrid_mean.SetLineWidth(2)
+    draw_graph_and_save(
+        g_hybrid_mean,
+        f"c_mean_{bin_type}_hybrid",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total_hybrid.png"),
+        logx
+    )
+
+    g_hybrid_sigma = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(hybrid_sigmas),
+        array_to_c(halfwidths),
+        array_to_c(hybrid_sigma_errs),
+    )
+    g_hybrid_sigma.SetName(f"{bin_type}_sigma_total_hybrid")
+    g_hybrid_sigma.SetTitle(f"{bin_type} hybrid sigma;{x_title};#sigma of q/p_{{T}} relative residual")
+    g_hybrid_sigma.SetMarkerStyle(29)
+    g_hybrid_sigma.SetMarkerColor(ROOT.kOrange + 7)
+    g_hybrid_sigma.SetLineColor(ROOT.kOrange + 7)
+    g_hybrid_sigma.SetLineWidth(2)
+    draw_graph_and_save(
+        g_hybrid_sigma,
+        f"c_sigma_{bin_type}_hybrid",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total_hybrid.png"),
+        logx
+    )
+
+    g_hybrid_chi2ndf = ROOT.TGraphErrors(
+        len(hlist),
+        array_to_c(centers),
+        array_to_c(hybrid_chi2ndf_vals),
+        array_to_c(halfwidths),
+        array_to_c([0.0] * len(hlist)),
+    )
+    g_hybrid_chi2ndf.SetName(f"{bin_type}_chi2ndf_total_hybrid")
+    g_hybrid_chi2ndf.SetTitle(f"{bin_type} hybrid #chi^{{2}}/NDF;{x_title};#chi^{{2}}/NDF")
+    g_hybrid_chi2ndf.SetMarkerStyle(29)
+    g_hybrid_chi2ndf.SetMarkerColor(ROOT.kOrange + 7)
+    g_hybrid_chi2ndf.SetLineColor(ROOT.kOrange + 7)
+    g_hybrid_chi2ndf.SetLineWidth(2)
+    draw_graph_and_save(
+        g_hybrid_chi2ndf,
+        f"c_chi2ndf_{bin_type}_hybrid",
+        out_file,
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total_hybrid.png"),
         logx
     )
 
@@ -698,6 +905,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
 
     csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary.csv")
     write_fit_csv(csv_path, csv_rows)
+    hybrid_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary_hybrid.csv")
+    write_hybrid_fit_csv(hybrid_csv_path, hybrid_csv_rows)
     double_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary_double.csv")
     write_double_fit_csv(double_csv_path, double_csv_rows)
 
@@ -1012,5 +1221,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
