@@ -33,6 +33,7 @@ MC_INPUT='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to
 DATA_INPUT='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2024I_Ntuples_v3/260310_205924/0000/*.root'
 
 REL_PT_ERR_CUT="0.2"
+TRIGGER_ARGS="--require-trigger-for-mc"
 
 # =========================================
 # UTILS
@@ -55,6 +56,7 @@ build_common_args() {
           --pt-bins \"${PT_BINS}\" \
           --dz-bins \"${DZ_BINS}\" \
           --dxy-bins \"${DXY_BINS}\" \
+          ${TRIGGER_ARGS} \
           --outdir ${outdir}"
 }
 

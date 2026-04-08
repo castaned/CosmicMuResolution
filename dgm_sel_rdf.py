@@ -110,14 +110,14 @@ AnalysisOutput analyze_event(
     const RVec<int>& probeID,
     const RVec<char>& hasProbe,
     const RVec<int>& isRecoType,
-    bool isMC,
+    bool requireTrigger,
     double min_pt,
     double max_rel_pt_err_tag,
     double max_rel_pt_err_probe
 ) {
     AnalysisOutput out;
 
-    if (!isMC && !hlt) return out;
+    if (requireTrigger && !hlt) return out;
     if (ndmu < 2) return out;
 
     for (int i = 0; i < ndmu; ++i) {
@@ -982,7 +982,8 @@ def main():
     parser.add_argument("--dxy-bins", type=parse_bin_list, default=DEFAULT_DXY_BINS, help="Comma-separated |dxy| bin edges")
     parser.add_argument("--min-pt", type=float, default=12.5, help="Minimum pT cut")
     parser.add_argument("--threads", type=int, default=0, help="Number of threads for implicit MT. 0 = ROOT default")
-    parser.add_argument("--no-trigger", action="store_true", help="Ignore HLT requirement even for DATA")
+    parser.add_argument("--no-trigger", action="store_true", help="Ignore HLT requirement for both DATA and MC")
+    parser.add_argument("--require-trigger-for-mc", action="store_true", help="Apply the same HLT requirement to MC samples")
     parser.add_argument("--res-range", type=parse_bin_list, default=None, help='Residual plot range as "xmin,xmax"')
     parser.add_argument("--max-rel-pt-err-tag", type=float, default=None, help="Maximum allowed ptError/pt for tag muon")
     parser.add_argument("--max-rel-pt-err-probe", type=float, default=None, help="Maximum allowed ptError/pt for probe muon")
@@ -1023,8 +1024,13 @@ def main():
 
     df = ROOT.RDataFrame(args.tree_name, file_vec)
 
-    is_mc_cpp = "true" if args.datatype == "MC" else "false"
-    use_trigger_cpp = "false" if args.no_trigger else "true"
+    require_trigger = (not args.no_trigger) and (args.datatype == "DATA" or args.require_trigger_for_mc)
+    require_trigger_cpp = "true" if require_trigger else "false"
+
+    if require_trigger:
+        print("Applying HLT_L2Mu10_NoVertex_NoBPTX3BX trigger requirement")
+    else:
+        print("Trigger requirement disabled for this sample")
 
     if args.muon_type == "DSA":
         pt_branch = "dmu_dsa_pt"
@@ -1060,7 +1066,7 @@ def main():
         f"""
         analyze_event(
             ndmu,
-            ({use_trigger_cpp} ? HLT_L2Mu10_NoVertex_NoBPTX3BX : true),
+            HLT_L2Mu10_NoVertex_NoBPTX3BX,
             {pt_branch},
             {pterr_branch},
             {eta_branch},
@@ -1072,7 +1078,7 @@ def main():
             {probe_id_branch},
             {has_probe_branch},
             {reco_type_branch},
-            {is_mc_cpp},
+            {require_trigger_cpp},
             {args.min_pt},
             {max_rel_pt_err_tag},
             {max_rel_pt_err_probe}
