@@ -18,6 +18,10 @@ DEFAULT_DZ_BINS = [1.0,5.0, 10.0, 20.0, 30.0, 45.0, 60.0,100,150.0]
 DEFAULT_DXY_BINS = [1.0,5.0, 10.0, 20.0, 30.0, 40.0,60.0, 80.0]
 HYBRID_DOUBLE_MIN_ENTRIES = 25
 HYBRID_MAX_REL_SIGMA_ERR = 0.5
+HYBRID_MAX_SIGMA_ERR_RATIO_TO_SINGLE = 1.25
+HYBRID_MIN_CORE_FRACTION = 0.10
+HYBRID_MAX_CORE_FRACTION = 0.90
+HYBRID_MAX_TAIL_TO_CORE_RATIO = 6.0
 
 
 # ============================================================
@@ -389,6 +393,12 @@ def choose_hybrid_result(single_result, double_result):
     reason = "double"
     use_double = True
 
+    single_rel_sigma_err = relative_error(single_result["sigma"], single_result["sigma_err"])
+    double_rel_sigma_err = relative_error(double_result["sigma_eff"], double_result["sigma_eff_err"])
+    sigma_err_ratio_to_single = float("inf")
+    if math.isfinite(single_result["sigma_err"]) and single_result["sigma_err"] > 0.0:
+        sigma_err_ratio_to_single = double_result["sigma_eff_err"] / single_result["sigma_err"]
+
     if double_result["entries"] < HYBRID_DOUBLE_MIN_ENTRIES:
         use_double = False
         reason = "low_entries"
@@ -401,12 +411,15 @@ def choose_hybrid_result(single_result, double_result):
     elif not math.isfinite(double_result["sigma_eff"]) or double_result["sigma_eff"] <= 0.0:
         use_double = False
         reason = "sigma_eff"
-    elif relative_error(double_result["sigma_eff"], double_result["sigma_eff_err"]) > HYBRID_MAX_REL_SIGMA_ERR:
+    elif double_rel_sigma_err > HYBRID_MAX_REL_SIGMA_ERR:
         use_double = False
         reason = "sigma_eff_err"
     elif not math.isfinite(double_result["frac_core"]) or not (0.0 < double_result["frac_core"] < 1.0):
         use_double = False
         reason = "frac_core"
+    elif not (HYBRID_MIN_CORE_FRACTION <= double_result["frac_core"] <= HYBRID_MAX_CORE_FRACTION):
+        use_double = False
+        reason = "core_fraction_extreme"
     elif (
         not math.isfinite(double_result["sigma_core"]) or double_result["sigma_core"] <= 0.0
         or not math.isfinite(double_result["sigma_tail"]) or double_result["sigma_tail"] <= 0.0
@@ -416,6 +429,22 @@ def choose_hybrid_result(single_result, double_result):
     elif double_result["sigma_tail"] < double_result["sigma_core"]:
         use_double = False
         reason = "component_order"
+    elif double_result["sigma_tail"] / double_result["sigma_core"] > HYBRID_MAX_TAIL_TO_CORE_RATIO:
+        use_double = False
+        reason = "tail_too_broad"
+    elif (
+        math.isfinite(single_rel_sigma_err)
+        and math.isfinite(double_rel_sigma_err)
+        and double_rel_sigma_err > single_rel_sigma_err
+    ):
+        use_double = False
+        reason = "rel_err_vs_single"
+    elif (
+        math.isfinite(sigma_err_ratio_to_single)
+        and sigma_err_ratio_to_single > HYBRID_MAX_SIGMA_ERR_RATIO_TO_SINGLE
+    ):
+        use_double = False
+        reason = "abs_err_vs_single"
 
     if use_double:
         return {
