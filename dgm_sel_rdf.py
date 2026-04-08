@@ -18,7 +18,7 @@ DEFAULT_DZ_BINS = [1.0,5.0, 10.0, 20.0, 30.0, 45.0, 60.0,100,150.0]
 DEFAULT_DXY_BINS = [1.0,5.0, 10.0, 20.0, 30.0, 40.0,60.0, 80.0]
 HYBRID_DOUBLE_MIN_ENTRIES = 25
 HYBRID_MAX_REL_SIGMA_ERR = 0.5
-HYBRID_MAX_SIGMA_ERR_RATIO_TO_SINGLE = 1.25
+HYBRID_MAX_SIGMA_ERR_RATIO_TO_SINGLE = 2.0
 HYBRID_MIN_CORE_FRACTION = 0.10
 HYBRID_MAX_CORE_FRACTION = 0.90
 HYBRID_MAX_TAIL_TO_CORE_RATIO = 6.0
@@ -432,13 +432,6 @@ def choose_hybrid_result(single_result, double_result):
     elif double_result["sigma_tail"] / double_result["sigma_core"] > HYBRID_MAX_TAIL_TO_CORE_RATIO:
         use_double = False
         reason = "tail_too_broad"
-    elif (
-        math.isfinite(single_rel_sigma_err)
-        and math.isfinite(double_rel_sigma_err)
-        and double_rel_sigma_err > single_rel_sigma_err
-    ):
-        use_double = False
-        reason = "rel_err_vs_single"
     elif (
         math.isfinite(sigma_err_ratio_to_single)
         and sigma_err_ratio_to_single > HYBRID_MAX_SIGMA_ERR_RATIO_TO_SINGLE
