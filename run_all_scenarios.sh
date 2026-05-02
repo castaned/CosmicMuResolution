@@ -47,7 +47,7 @@ esac
 OUTDIR_BASE="results_full_scan_${MUON_TYPE}_${DATA_CAMPAIGN}"
 
 # INPUTS
-MC_INPUT="${MC_INPUT:-/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v2/260310_205717/0000/*.root}"
+MC_INPUT="${MC_INPUT:-/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v3/260324_154035/0000/*.root}"
 DATA_INPUT="${DATA_INPUT:-${DATA_DIR}/*/*/*.root}"
 
 REL_PT_ERR_CUT="0.2"
