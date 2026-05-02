@@ -9,6 +9,7 @@ COMPARE_MC_DATA_SCRIPT="compare_mc_data_binned.py"
 COMPARE_SCENARIOS_SCRIPT="compare_scenarios_pt.py"
 
 MUON_TYPE="${1:-DSA}"
+DATA_CAMPAIGN="${2:-2024I}"
 TREE_NAME="Events"
 MIN_PT="12.5"
 
@@ -26,11 +27,28 @@ else
     DXY_BINS="1,5,10,20,30,40,60,80"
 fi
 
-OUTDIR_BASE="results_full_scan_${MUON_TYPE}"
+case "${DATA_CAMPAIGN}" in
+    2022F)
+        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2022F_Ntuples_v2'
+        ;;
+    2023D)
+        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2023D_Ntuples_v2'
+        ;;
+    2024I)
+        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2024I_Ntuples_v4'
+        ;;
+    *)
+        echo "Unsupported DATA campaign: ${DATA_CAMPAIGN}"
+        echo "Supported campaigns: 2022F, 2023D, 2024I"
+        exit 1
+        ;;
+esac
 
-# INPUTS (ajusta si necesario)
-MC_INPUT='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v2/260310_205717/0000/*.root'
-DATA_INPUT='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2024I_Ntuples_v3/260310_205924/0000/*.root'
+OUTDIR_BASE="results_full_scan_${MUON_TYPE}_${DATA_CAMPAIGN}"
+
+# INPUTS
+MC_INPUT="${MC_INPUT:-/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v2/260310_205717/0000/*.root}"
+DATA_INPUT="${DATA_INPUT:-${DATA_DIR}/*/*/*.root}"
 
 REL_PT_ERR_CUT="0.2"
 TRIGGER_ARGS=""
@@ -64,7 +82,9 @@ build_common_args() {
 # PREP
 # =========================================
 
-echo "Running full pipeline for ${MUON_TYPE}"
+echo "Running full pipeline for ${MUON_TYPE} with DATA campaign ${DATA_CAMPAIGN}"
+echo "MC input: ${MC_INPUT}"
+echo "DATA input: ${DATA_INPUT}"
 
 if [[ ! -f "${ANALYSIS_SCRIPT}" ]]; then
     echo "Missing ${ANALYSIS_SCRIPT}"
