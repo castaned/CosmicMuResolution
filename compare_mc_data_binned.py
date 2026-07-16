@@ -63,7 +63,7 @@ def choose_fixed_range(out_png, ymin_auto, ymax_auto):
 
     if "sigma" in name:
         if is_pt:
-            return (0.0, 3.6) if is_dsa else (0.0, 0.19)
+            return (0.0, 3.6) if is_dsa else (0.0, 0.12)
         if is_dz:
             return (0.0, 0.8) if is_dsa else (0.0, 0.08)
         if is_dxy:
