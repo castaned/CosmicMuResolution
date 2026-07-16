@@ -109,14 +109,27 @@ def make_frame(xmin, xmax, ymin, ymax, xtitle, ytitle, name):
 def draw_header(canvas, left_label, right_label):
     latex = ROOT.TLatex()
     latex.SetNDC()
-    latex.SetTextFont(42)
-    latex.SetTextSize(0.040)
+    left_margin = canvas.GetLeftMargin()
+    top_y = 1.0 - canvas.GetTopMargin() + 0.015
+
+    cms_label = "CMS"
+    extra_label = left_label.replace("CMS", "", 1).strip() if left_label.startswith("CMS") else left_label
+
     latex.SetTextAlign(13)
-    latex.DrawLatex(0.16, 0.965, left_label)
+    latex.SetTextFont(61)
+    latex.SetTextSize(0.050)
+    latex.DrawLatex(left_margin, top_y, cms_label)
+
+    if extra_label:
+        latex.SetTextFont(52)
+        latex.SetTextSize(0.038)
+        latex.DrawLatex(left_margin + 0.105, top_y, extra_label)
 
     if right_label:
         latex.SetTextAlign(33)
-        latex.DrawLatex(0.88, 0.965, right_label)
+        latex.SetTextFont(42)
+        latex.SetTextSize(0.040)
+        latex.DrawLatex(0.88, top_y, right_label)
 
 
 def draw_overlay(g_mc, g_data, title, ytitle, out_png, bin_type, left_label, right_label):
@@ -127,7 +140,7 @@ def draw_overlay(g_mc, g_data, title, ytitle, out_png, bin_type, left_label, rig
     if logx:
         c.SetLogx()
     c.SetLeftMargin(0.16)
-    c.SetTopMargin(0.11)
+    c.SetTopMargin(0.09)
 
     ymin_auto, ymax_auto = get_graph_y_range([g_mc, g_data], mode="robust")
     ymin, ymax = choose_fixed_range(out_png, ymin_auto, ymax_auto)
@@ -295,7 +308,7 @@ def main():
     parser.add_argument("--data", required=True, help="DATA ROOT file")
     parser.add_argument("--outdir", default="comparison_plots", help="Output directory")
     parser.add_argument("--period", default="", help="Period label shown at the top right, e.g. 2023D")
-    parser.add_argument("--left-label", default="CMS Cosmics", help="Header label shown at the top left")
+    parser.add_argument("--left-label", default="CMS Cosmics Preliminary", help="Header label shown at the top left")
     args = parser.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
