@@ -208,6 +208,7 @@ for scenario in baseline tagOnly tagProbe; do
 run_cmd "${PYTHON} ${COMPARE_MC_DATA_SCRIPT} \
     --mc ${OUTDIR_BASE}/MC_${scenario}/Cosmics_muons_MC_${MUON_TYPE}_${scenario}.root \
     --data ${OUTDIR_BASE}/DATA_${scenario}/Cosmics_muons_DATA_${MUON_TYPE}_${scenario}.root \
+    --period ${DATA_CAMPAIGN} \
     --outdir ${OUTDIR_BASE}/compare_MC_DATA_${MUON_TYPE}_${scenario}"
 
 done

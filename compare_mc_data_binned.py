@@ -106,7 +106,20 @@ def make_frame(xmin, xmax, ymin, ymax, xtitle, ytitle, name):
     return h
 
 
-def draw_overlay(g_mc, g_data, title, ytitle, out_png, bin_type):
+def draw_header(canvas, left_label, right_label):
+    latex = ROOT.TLatex()
+    latex.SetNDC()
+    latex.SetTextFont(42)
+    latex.SetTextSize(0.040)
+    latex.SetTextAlign(13)
+    latex.DrawLatex(0.16, 0.965, left_label)
+
+    if right_label:
+        latex.SetTextAlign(33)
+        latex.DrawLatex(0.88, 0.965, right_label)
+
+
+def draw_overlay(g_mc, g_data, title, ytitle, out_png, bin_type, left_label, right_label):
     c = ROOT.TCanvas(f"c_{os.path.basename(out_png)}", "", 900, 700)
     c.SetGrid()
 
@@ -114,6 +127,7 @@ def draw_overlay(g_mc, g_data, title, ytitle, out_png, bin_type):
     if logx:
         c.SetLogx()
     c.SetLeftMargin(0.16)
+    c.SetTopMargin(0.11)
 
     ymin_auto, ymax_auto = get_graph_y_range([g_mc, g_data], mode="robust")
     ymin, ymax = choose_fixed_range(out_png, ymin_auto, ymax_auto)
@@ -138,6 +152,7 @@ def draw_overlay(g_mc, g_data, title, ytitle, out_png, bin_type):
     leg.AddEntry(g_mc, "MC", "pl")
     leg.AddEntry(g_data, "Data", "pl")
     leg.Draw()
+    draw_header(c, left_label, right_label)
 
     c.SaveAs(out_png)
 
@@ -152,7 +167,7 @@ def load_comparison_graphs(f_mc, f_data, source_name, mc_name, data_name):
     return g_mc.Clone(mc_name), g_data.Clone(data_name)
 
 
-def compare_family(f_mc, f_data, outdir, bin_type):
+def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
     mean_name = f"{bin_type}_mean_total"
     sigma_name = f"{bin_type}_sigma_total"
     hybrid_mean_name = f"{bin_type}_mean_total_hybrid"
@@ -198,7 +213,9 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} mean comparison",
         "Mean of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_mean_mc_vs_data.png"),
-        bin_type
+        bin_type,
+        left_label,
+        right_label
     )
 
     draw_overlay(
@@ -207,7 +224,9 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} sigma comparison",
         "#sigma of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_sigma_mc_vs_data.png"),
-        bin_type
+        bin_type,
+        left_label,
+        right_label
     )
 
     draw_overlay(
@@ -216,7 +235,9 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} hybrid mean comparison",
         "Mean of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_mean_hybrid_mc_vs_data.png"),
-        bin_type
+        bin_type,
+        left_label,
+        right_label
     )
 
     draw_overlay(
@@ -225,7 +246,9 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} hybrid sigma comparison",
         "#sigma of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_sigma_hybrid_mc_vs_data.png"),
-        bin_type
+        bin_type,
+        left_label,
+        right_label
     )
 
     draw_overlay(
@@ -234,7 +257,9 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} double-gaussian mean comparison",
         "Mean of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_mean_double_mc_vs_data.png"),
-        bin_type
+        bin_type,
+        left_label,
+        right_label
     )
 
     draw_overlay(
@@ -243,7 +268,9 @@ def compare_family(f_mc, f_data, outdir, bin_type):
         f"{bin_type} double-gaussian effective sigma comparison",
         "#sigma_{eff} of q/p_{T} relative residual",
         os.path.join(outdir, f"{bin_type}_sigma_eff_double_mc_vs_data.png"),
-        bin_type
+        bin_type,
+        left_label,
+        right_label
     )
 
     return {
@@ -267,6 +294,8 @@ def main():
     parser.add_argument("--mc", required=True, help="MC ROOT file")
     parser.add_argument("--data", required=True, help="DATA ROOT file")
     parser.add_argument("--outdir", default="comparison_plots", help="Output directory")
+    parser.add_argument("--period", default="", help="Period label shown at the top right, e.g. 2023D")
+    parser.add_argument("--left-label", default="CMS Cosmics", help="Header label shown at the top left")
     args = parser.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
@@ -282,7 +311,7 @@ def main():
     out_root = ROOT.TFile(os.path.join(args.outdir, "mc_data_comparison.root"), "RECREATE")
 
     for bin_type in ["pt", "dz", "dxy"]:
-        graphs = compare_family(f_mc, f_data, args.outdir, bin_type)
+        graphs = compare_family(f_mc, f_data, args.outdir, bin_type, args.left_label, args.period)
         out_root.cd()
         graphs["mean_mc"].Write(f"{bin_type}_mean_mc")
         graphs["mean_data"].Write(f"{bin_type}_mean_data")
