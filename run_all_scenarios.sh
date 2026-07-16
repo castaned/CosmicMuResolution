@@ -10,6 +10,7 @@ COMPARE_SCENARIOS_SCRIPT="compare_scenarios_pt.py"
 
 MUON_TYPE="${1:-DSA}"
 DATA_CAMPAIGN="${2:-2024I}"
+MC_CAMPAIGN="${3:-}"
 TREE_NAME="Events"
 MIN_PT="12.5"
 
@@ -30,12 +31,15 @@ fi
 case "${DATA_CAMPAIGN}" in
     2022F)
         DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2022F_Ntuples_v2'
+        DEFAULT_MC_CAMPAIGN="2022"
         ;;
     2023D)
         DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2023D_Ntuples_v2'
+        DEFAULT_MC_CAMPAIGN="2023"
         ;;
     2024I)
         DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2024I_Ntuples_v4'
+        DEFAULT_MC_CAMPAIGN="2024"
         ;;
     *)
         echo "Unsupported DATA campaign: ${DATA_CAMPAIGN}"
@@ -44,10 +48,31 @@ case "${DATA_CAMPAIGN}" in
         ;;
 esac
 
+if [[ -z "${MC_CAMPAIGN}" ]]; then
+    MC_CAMPAIGN="${DEFAULT_MC_CAMPAIGN}"
+fi
+
+case "${MC_CAMPAIGN}" in
+    2022)
+        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2022_Ntuples_v1'
+        ;;
+    2023)
+        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2023_Ntuples_v1'
+        ;;
+    2024)
+        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v3'
+        ;;
+    *)
+        echo "Unsupported MC campaign: ${MC_CAMPAIGN}"
+        echo "Supported MC campaigns: 2022, 2023, 2024"
+        exit 1
+        ;;
+esac
+
 OUTDIR_BASE="results_full_scan_${MUON_TYPE}_${DATA_CAMPAIGN}"
 
 # INPUTS
-MC_INPUT="${MC_INPUT:-/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v3/260324_154035/0000/*.root}"
+MC_INPUT="${MC_INPUT:-${MC_DIR}/*/*/*.root}"
 DATA_INPUT="${DATA_INPUT:-${DATA_DIR}/*/*/*.root}"
 
 REL_PT_ERR_CUT="0.2"
@@ -82,7 +107,7 @@ build_common_args() {
 # PREP
 # =========================================
 
-echo "Running full pipeline for ${MUON_TYPE} with DATA campaign ${DATA_CAMPAIGN}"
+echo "Running full pipeline for ${MUON_TYPE} with DATA campaign ${DATA_CAMPAIGN} and MC campaign ${MC_CAMPAIGN}"
 echo "MC input: ${MC_INPUT}"
 echo "DATA input: ${DATA_INPUT}"
 
