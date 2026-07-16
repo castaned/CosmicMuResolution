@@ -110,7 +110,7 @@ def draw_header(canvas, left_label, right_label):
     latex = ROOT.TLatex()
     latex.SetNDC()
     left_margin = canvas.GetLeftMargin()
-    top_y = 1.0 - canvas.GetTopMargin() + 0.028
+    top_y = 1.0 - canvas.GetTopMargin() + 0.034
 
     cms_label = "CMS"
     extra_label = left_label.replace("CMS", "", 1).strip() if left_label.startswith("CMS") else left_label
