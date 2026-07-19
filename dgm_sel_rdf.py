@@ -76,11 +76,17 @@ struct AnalysisOutput {
     RVec<double> tag_phi;
     RVec<double> tag_charge;
     RVec<double> tag_pt_err_over_pt;
+    RVec<double> tag_normalized_chi2;
+    RVec<double> tag_primary_hit_count;
+    RVec<double> tag_secondary_hit_count;
     RVec<double> probe_pt;
     RVec<double> probe_eta;
     RVec<double> probe_phi;
     RVec<double> probe_charge;
     RVec<double> probe_pt_err_over_pt;
+    RVec<double> probe_normalized_chi2;
+    RVec<double> probe_primary_hit_count;
+    RVec<double> probe_secondary_hit_count;
     RVec<double> all_muon_pt;
     RVec<double> tag_dz_abs;
     RVec<double> tag_dxy_abs;
@@ -180,12 +186,18 @@ AnalysisOutput analyze_event(
         out.tag_dz_abs.push_back(std::abs(dz[i]));
         out.tag_dxy_abs.push_back(std::abs(dxy[i]));
         out.tag_pt_err_over_pt.push_back(tag_rel_pt_err);
+        out.tag_normalized_chi2.push_back(tag_normalized_chi2);
+        out.tag_primary_hit_count.push_back(tag_primary_hit_count);
+        out.tag_secondary_hit_count.push_back(tag_secondary_hit_count);
 
         out.probe_pt.push_back(pt[j]);
         out.probe_eta.push_back(eta[j]);
         out.probe_phi.push_back(phi[j]);
         out.probe_charge.push_back(charge[j]);
         out.probe_pt_err_over_pt.push_back(probe_rel_pt_err);
+        out.probe_normalized_chi2.push_back(probe_normalized_chi2);
+        out.probe_primary_hit_count.push_back(probe_primary_hit_count);
+        out.probe_secondary_hit_count.push_back(probe_secondary_hit_count);
     }
 
     return out;
@@ -1004,6 +1016,56 @@ def make_overlay_plot(h_tag, h_probe, out_file, out_png, name="overlay"):
     c.SaveAs(out_png)
 
 
+def make_profile_overlay_plot(h2_tag, h2_probe, out_file, out_png, name="profile_overlay"):
+    c = ROOT.TCanvas(f"c_{name}", "", 800, 600)
+    c.SetGrid()
+
+    p_tag = h2_tag.ProfileX(f"{name}_tag_profile")
+    p_probe = h2_probe.ProfileX(f"{name}_probe_profile")
+
+    p_tag.SetLineColor(ROOT.kRed + 1)
+    p_probe.SetLineColor(ROOT.kBlue + 1)
+    p_tag.SetMarkerColor(ROOT.kRed + 1)
+    p_probe.SetMarkerColor(ROOT.kBlue + 1)
+    p_tag.SetMarkerStyle(20)
+    p_probe.SetMarkerStyle(21)
+    p_tag.SetLineWidth(2)
+    p_probe.SetLineWidth(2)
+    p_tag.SetStats(0)
+    p_probe.SetStats(0)
+
+    max_y = max(p_tag.GetMaximum(), p_probe.GetMaximum())
+    p_tag.SetMaximum(1.2 * max_y if max_y > 0 else 1.0)
+    p_tag.SetMinimum(0.0)
+    p_tag.Draw("EP")
+    p_probe.Draw("EP SAME")
+
+    leg = ROOT.TLegend(0.62, 0.75, 0.88, 0.88)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    leg.AddEntry(p_tag, "Tag", "pl")
+    leg.AddEntry(p_probe, "Probe", "pl")
+    leg.Draw()
+
+    out_file.cd()
+    p_tag.Write(f"{name}_tag_profile")
+    p_probe.Write(f"{name}_probe_profile")
+    c.Write(f"c_{name}")
+    c.SaveAs(out_png)
+
+
+def save_2d_plot(hist2d, out_file, out_png, name):
+    c = ROOT.TCanvas(f"c_{name}", "", 850, 700)
+    c.SetGrid()
+    c.SetRightMargin(0.14)
+    hist2d.SetStats(0)
+    hist2d.Draw("COLZ")
+    out_file.cd()
+    hist2d.Write()
+    c.Write(f"c_{name}")
+    c.SaveAs(out_png)
+
+
 # ============================================================
 # Main
 # ============================================================
@@ -1179,11 +1241,17 @@ def main():
            .Define("tag_phi", "ana.tag_phi")
            .Define("tag_charge", "ana.tag_charge")
            .Define("tag_pt_err_over_pt", "ana.tag_pt_err_over_pt")
+           .Define("tag_normalized_chi2", "ana.tag_normalized_chi2")
+           .Define("tag_primary_hit_count", "ana.tag_primary_hit_count")
+           .Define("tag_secondary_hit_count", "ana.tag_secondary_hit_count")
            .Define("probe_pt", "ana.probe_pt")
            .Define("probe_eta", "ana.probe_eta")
            .Define("probe_phi", "ana.probe_phi")
            .Define("probe_charge", "ana.probe_charge")
            .Define("probe_pt_err_over_pt", "ana.probe_pt_err_over_pt")
+           .Define("probe_normalized_chi2", "ana.probe_normalized_chi2")
+           .Define("probe_primary_hit_count", "ana.probe_primary_hit_count")
+           .Define("probe_secondary_hit_count", "ana.probe_secondary_hit_count")
            .Define("all_muon_pt", "ana.all_muon_pt")
            .Define("tag_dz_abs", "ana.tag_dz_abs")
            .Define("tag_dxy_abs", "ana.tag_dxy_abs")
@@ -1224,6 +1292,40 @@ def main():
     )
     h_probe_pt_err_over_pt = df2.Histo1D(
         ("hist_probe_ptErrOverPt", "Probe p_{T}^{error}/p_{T};p_{T}^{error}/p_{T};Events", 100, 0.0, 1.0),
+        "probe_pt_err_over_pt"
+    )
+    h_tag_chi2 = df2.Histo1D(
+        ("hist_tag_chi2", "Tag normalized #chi^{2};normalized #chi^{2};Events", 100, 0.0, 20.0),
+        "tag_normalized_chi2"
+    )
+    h_probe_chi2 = df2.Histo1D(
+        ("hist_probe_chi2", "Probe normalized #chi^{2};normalized #chi^{2};Events", 100, 0.0, 20.0),
+        "probe_normalized_chi2"
+    )
+    h_tag_primary_hits = df2.Histo1D(
+        ("hist_tag_primaryHits", "Tag primary hit count;primary hit count;Events", 80, 0.0, 80.0),
+        "tag_primary_hit_count"
+    )
+    h_probe_primary_hits = df2.Histo1D(
+        ("hist_probe_primaryHits", "Probe primary hit count;primary hit count;Events", 80, 0.0, 80.0),
+        "probe_primary_hit_count"
+    )
+    h_tag_secondary_hits = df2.Histo1D(
+        ("hist_tag_secondaryHits", "Tag secondary hit count;secondary hit count;Events", 80, 0.0, 80.0),
+        "tag_secondary_hit_count"
+    )
+    h_probe_secondary_hits = df2.Histo1D(
+        ("hist_probe_secondaryHits", "Probe secondary hit count;secondary hit count;Events", 80, 0.0, 80.0),
+        "probe_secondary_hit_count"
+    )
+    h2_tag_pterr_vs_pt = df2.Histo2D(
+        ("hist2_tag_ptErrOverPt_vs_pt", "Tag p_{T}^{error}/p_{T} vs p_{T};p_{T} [GeV];p_{T}^{error}/p_{T}", 80, 0.0, 400.0, 60, 0.0, 1.0),
+        "tag_pt",
+        "tag_pt_err_over_pt"
+    )
+    h2_probe_pterr_vs_pt = df2.Histo2D(
+        ("hist2_probe_ptErrOverPt_vs_pt", "Probe p_{T}^{error}/p_{T} vs p_{T};p_{T} [GeV];p_{T}^{error}/p_{T}", 80, 0.0, 400.0, 60, 0.0, 1.0),
+        "probe_pt",
         "probe_pt_err_over_pt"
     )
 
@@ -1301,6 +1403,9 @@ def main():
         h_pt_probe, h_eta_probe, h_phi_probe, h_charge_probe,
         h_tag_dz_abs, h_tag_dxy_abs,
         h_tag_pt_err_over_pt, h_probe_pt_err_over_pt,
+        h_tag_chi2, h_probe_chi2,
+        h_tag_primary_hits, h_probe_primary_hits,
+        h_tag_secondary_hits, h_probe_secondary_hits,
         h_all_muon_pt
     ]
 
@@ -1323,6 +1428,12 @@ def main():
         (h_tag_dxy_abs.GetValue(), "hist_tag_dxy_abs.png"),
         (h_tag_pt_err_over_pt.GetValue(), "hist_tag_ptErrOverPt.png"),
         (h_probe_pt_err_over_pt.GetValue(), "hist_probe_ptErrOverPt.png"),
+        (h_tag_chi2.GetValue(), "hist_tag_chi2.png"),
+        (h_probe_chi2.GetValue(), "hist_probe_chi2.png"),
+        (h_tag_primary_hits.GetValue(), "hist_tag_primaryHits.png"),
+        (h_probe_primary_hits.GetValue(), "hist_probe_primaryHits.png"),
+        (h_tag_secondary_hits.GetValue(), "hist_tag_secondaryHits.png"),
+        (h_probe_secondary_hits.GetValue(), "hist_probe_secondaryHits.png"),
         (h_all_muon_pt.GetValue(), f"hist_pT_{all_muon_label}.png"),
     ]
 
@@ -1339,6 +1450,27 @@ def main():
         os.path.join(base_dir, "Control_plots", "ptErr_over_pt_comparison.png"),
         name="ptErrOverPt_compare"
     )
+    make_overlay_plot(
+        h_tag_chi2.GetValue(),
+        h_probe_chi2.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "chi2_comparison.png"),
+        name="chi2_compare"
+    )
+    make_overlay_plot(
+        h_tag_primary_hits.GetValue(),
+        h_probe_primary_hits.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "primary_hits_comparison.png"),
+        name="primaryHits_compare"
+    )
+    make_overlay_plot(
+        h_tag_secondary_hits.GetValue(),
+        h_probe_secondary_hits.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "secondary_hits_comparison.png"),
+        name="secondaryHits_compare"
+    )
 
     make_overlay_plot(
         h_pt_tag.GetValue(),
@@ -1346,6 +1478,25 @@ def main():
         out,
         os.path.join(base_dir, "Control_plots", "pt_tag_probe_comparison.png"),
         name="pt_tag_probe_compare"
+    )
+    save_2d_plot(
+        h2_tag_pterr_vs_pt.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "tag_ptErrOverPt_vs_pt.png"),
+        name="tag_ptErrOverPt_vs_pt"
+    )
+    save_2d_plot(
+        h2_probe_pterr_vs_pt.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "probe_ptErrOverPt_vs_pt.png"),
+        name="probe_ptErrOverPt_vs_pt"
+    )
+    make_profile_overlay_plot(
+        h2_tag_pterr_vs_pt.GetValue(),
+        h2_probe_pterr_vs_pt.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "ptErrOverPt_vs_pt_profile_comparison.png"),
+        name="ptErrOverPt_vs_pt_profile_compare"
     )
 
     fit_and_draw(pt_histos, "pt", "p_{T}^{tag} [GeV]", base_dir, args.muon_type, res_min, res_max, out, logx=True)
