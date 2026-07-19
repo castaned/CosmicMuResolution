@@ -71,6 +71,10 @@ using namespace ROOT::VecOps;
 struct AnalysisOutput {
     RVec<double> resolutions;
     RVec<double> symmetric_resolutions;
+    RVec<double> resolutions_exactly_two;
+    RVec<double> resolutions_more_than_two;
+    RVec<double> symmetric_resolutions_exactly_two;
+    RVec<double> symmetric_resolutions_more_than_two;
     RVec<double> tag_pt;
     RVec<double> tag_eta;
     RVec<double> tag_phi;
@@ -92,6 +96,12 @@ struct AnalysisOutput {
     RVec<double> delta_abs_q_over_pt;
     RVec<double> tag_abs_q_over_pt;
     RVec<double> probe_abs_q_over_pt;
+    RVec<double> pt_ratio_probe_over_tag_exactly_two;
+    RVec<double> pt_ratio_probe_over_tag_more_than_two;
+    RVec<double> pt_asymmetry_probe_tag_exactly_two;
+    RVec<double> pt_asymmetry_probe_tag_more_than_two;
+    RVec<double> delta_abs_q_over_pt_exactly_two;
+    RVec<double> delta_abs_q_over_pt_more_than_two;
     RVec<double> all_muon_pt;
     RVec<double> tag_dz_abs;
     RVec<double> tag_dxy_abs;
@@ -141,6 +151,13 @@ AnalysisOutput analyze_event(
     if (requireTrigger && !hlt) return out;
     if (ndmu < 2) return out;
 
+    int n_reco_muons = 0;
+    for (int i = 0; i < ndmu; ++i) {
+        if (isRecoType[i] == 1) n_reco_muons++;
+    }
+    const bool exactly_two_reco_muons = (n_reco_muons == 2);
+    const bool more_than_two_reco_muons = (n_reco_muons > 2);
+
     for (int i = 0; i < ndmu; ++i) {
         out.all_muon_pt.push_back(pt[i]);
 
@@ -183,6 +200,13 @@ AnalysisOutput analyze_event(
 
         out.resolutions.push_back(resolution);
         out.symmetric_resolutions.push_back(symmetric_resolution);
+        if (exactly_two_reco_muons) {
+            out.resolutions_exactly_two.push_back(resolution);
+            out.symmetric_resolutions_exactly_two.push_back(symmetric_resolution);
+        } else if (more_than_two_reco_muons) {
+            out.resolutions_more_than_two.push_back(resolution);
+            out.symmetric_resolutions_more_than_two.push_back(symmetric_resolution);
+        }
 
         out.tag_pt.push_back(pt[i]);
         out.tag_eta.push_back(eta[i]);
@@ -208,6 +232,15 @@ AnalysisOutput analyze_event(
         out.delta_abs_q_over_pt.push_back(inv_up - inv_down);
         out.tag_abs_q_over_pt.push_back(inv_down);
         out.probe_abs_q_over_pt.push_back(inv_up);
+        if (exactly_two_reco_muons) {
+            out.pt_ratio_probe_over_tag_exactly_two.push_back(pt[j] / pt[i]);
+            out.pt_asymmetry_probe_tag_exactly_two.push_back((pt[j] - pt[i]) / (pt[j] + pt[i]));
+            out.delta_abs_q_over_pt_exactly_two.push_back(inv_up - inv_down);
+        } else if (more_than_two_reco_muons) {
+            out.pt_ratio_probe_over_tag_more_than_two.push_back(pt[j] / pt[i]);
+            out.pt_asymmetry_probe_tag_more_than_two.push_back((pt[j] - pt[i]) / (pt[j] + pt[i]));
+            out.delta_abs_q_over_pt_more_than_two.push_back(inv_up - inv_down);
+        }
     }
 
     return out;
@@ -1026,6 +1059,38 @@ def make_overlay_plot(h_tag, h_probe, out_file, out_png, name="overlay"):
     c.SaveAs(out_png)
 
 
+def make_labeled_overlay_plot(h_a, h_b, label_a, label_b, out_file, out_png, name="overlay_labeled"):
+    c = ROOT.TCanvas(f"c_{name}", "", 800, 600)
+    c.SetGrid()
+
+    h_a = h_a.Clone(f"{name}_a_clone")
+    h_b = h_b.Clone(f"{name}_b_clone")
+
+    h_a.SetLineColor(ROOT.kRed + 1)
+    h_b.SetLineColor(ROOT.kBlue + 1)
+    h_a.SetLineWidth(2)
+    h_b.SetLineWidth(2)
+    h_a.SetStats(0)
+    h_b.SetStats(0)
+
+    max_y = max(h_a.GetMaximum(), h_b.GetMaximum())
+    h_a.SetMaximum(1.2 * max_y if max_y > 0 else 1.0)
+
+    h_a.Draw("hist")
+    h_b.Draw("hist same")
+
+    leg = ROOT.TLegend(0.55, 0.74, 0.88, 0.88)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    leg.AddEntry(h_a, label_a, "l")
+    leg.AddEntry(h_b, label_b, "l")
+    leg.Draw()
+
+    out_file.cd()
+    c.Write(f"c_{name}")
+    c.SaveAs(out_png)
+
+
 def make_profile_overlay_plot(h2_tag, h2_probe, out_file, out_png, name="profile_overlay"):
     c = ROOT.TCanvas(f"c_{name}", "", 800, 600)
     c.SetGrid()
@@ -1246,6 +1311,10 @@ def main():
     df2 = (
         df1.Define("resolutions", "ana.resolutions")
            .Define("symmetric_resolutions", "ana.symmetric_resolutions")
+           .Define("resolutions_exactly_two", "ana.resolutions_exactly_two")
+           .Define("resolutions_more_than_two", "ana.resolutions_more_than_two")
+           .Define("symmetric_resolutions_exactly_two", "ana.symmetric_resolutions_exactly_two")
+           .Define("symmetric_resolutions_more_than_two", "ana.symmetric_resolutions_more_than_two")
            .Define("tag_pt", "ana.tag_pt")
            .Define("tag_eta", "ana.tag_eta")
            .Define("tag_phi", "ana.tag_phi")
@@ -1267,6 +1336,12 @@ def main():
            .Define("delta_abs_q_over_pt", "ana.delta_abs_q_over_pt")
            .Define("tag_abs_q_over_pt", "ana.tag_abs_q_over_pt")
            .Define("probe_abs_q_over_pt", "ana.probe_abs_q_over_pt")
+           .Define("pt_ratio_probe_over_tag_exactly_two", "ana.pt_ratio_probe_over_tag_exactly_two")
+           .Define("pt_ratio_probe_over_tag_more_than_two", "ana.pt_ratio_probe_over_tag_more_than_two")
+           .Define("pt_asymmetry_probe_tag_exactly_two", "ana.pt_asymmetry_probe_tag_exactly_two")
+           .Define("pt_asymmetry_probe_tag_more_than_two", "ana.pt_asymmetry_probe_tag_more_than_two")
+           .Define("delta_abs_q_over_pt_exactly_two", "ana.delta_abs_q_over_pt_exactly_two")
+           .Define("delta_abs_q_over_pt_more_than_two", "ana.delta_abs_q_over_pt_more_than_two")
            .Define("all_muon_pt", "ana.all_muon_pt")
            .Define("tag_dz_abs", "ana.tag_dz_abs")
            .Define("tag_dxy_abs", "ana.tag_dxy_abs")
@@ -1279,6 +1354,22 @@ def main():
     h_total_sym = df2.Histo1D(
         ("Tot_pthist_sym", "Symmetric q/pT Residual distribution;symmetric q/p_{T} residual;Events", 80, res_min, res_max),
         "symmetric_resolutions"
+    )
+    h_total_ndsa_eq2 = df2.Histo1D(
+        ("Tot_pthist_ndsa_eq2", "q/pT Residual distribution (nReco=2);q/p_{T} residual;Events", 80, res_min, res_max),
+        "resolutions_exactly_two"
+    )
+    h_total_ndsa_gt2 = df2.Histo1D(
+        ("Tot_pthist_ndsa_gt2", "q/pT Residual distribution (nReco>2);q/p_{T} residual;Events", 80, res_min, res_max),
+        "resolutions_more_than_two"
+    )
+    h_total_sym_ndsa_eq2 = df2.Histo1D(
+        ("Tot_pthist_sym_ndsa_eq2", "Symmetric q/pT Residual distribution (nReco=2);symmetric q/p_{T} residual;Events", 80, res_min, res_max),
+        "symmetric_resolutions_exactly_two"
+    )
+    h_total_sym_ndsa_gt2 = df2.Histo1D(
+        ("Tot_pthist_sym_ndsa_gt2", "Symmetric q/pT Residual distribution (nReco>2);symmetric q/p_{T} residual;Events", 80, res_min, res_max),
+        "symmetric_resolutions_more_than_two"
     )
 
     h_pt_tag = df2.Histo1D(("hist_pt_tag", "Tag muon p_{T};p_{T} [GeV];Events", 350, 0, 300), "tag_pt")
@@ -1371,6 +1462,30 @@ def main():
         "tag_pt",
         "probe_pt"
     )
+    h_pt_ratio_probe_over_tag_ndsa_eq2 = df2.Histo1D(
+        ("hist_pt_ratio_probe_over_tag_ndsa_eq2", "Probe p_{T} / Tag p_{T} (nReco=2);probe p_{T} / tag p_{T};Events", 120, 0.0, 3.0),
+        "pt_ratio_probe_over_tag_exactly_two"
+    )
+    h_pt_ratio_probe_over_tag_ndsa_gt2 = df2.Histo1D(
+        ("hist_pt_ratio_probe_over_tag_ndsa_gt2", "Probe p_{T} / Tag p_{T} (nReco>2);probe p_{T} / tag p_{T};Events", 120, 0.0, 3.0),
+        "pt_ratio_probe_over_tag_more_than_two"
+    )
+    h_pt_asymmetry_probe_tag_ndsa_eq2 = df2.Histo1D(
+        ("hist_pt_asymmetry_probe_tag_ndsa_eq2", "(Probe p_{T} - Tag p_{T}) / (Probe p_{T} + Tag p_{T}) (nReco=2);p_{T} asymmetry;Events", 120, -1.0, 1.0),
+        "pt_asymmetry_probe_tag_exactly_two"
+    )
+    h_pt_asymmetry_probe_tag_ndsa_gt2 = df2.Histo1D(
+        ("hist_pt_asymmetry_probe_tag_ndsa_gt2", "(Probe p_{T} - Tag p_{T}) / (Probe p_{T} + Tag p_{T}) (nReco>2);p_{T} asymmetry;Events", 120, -1.0, 1.0),
+        "pt_asymmetry_probe_tag_more_than_two"
+    )
+    h_delta_abs_q_over_pt_ndsa_eq2 = df2.Histo1D(
+        ("hist_delta_abs_q_over_pt_ndsa_eq2", "Probe |q|/p_{T} - Tag |q|/p_{T} (nReco=2);#Delta|q|/p_{T} [GeV^{-1}];Events", 120, -0.08, 0.08),
+        "delta_abs_q_over_pt_exactly_two"
+    )
+    h_delta_abs_q_over_pt_ndsa_gt2 = df2.Histo1D(
+        ("hist_delta_abs_q_over_pt_ndsa_gt2", "Probe |q|/p_{T} - Tag |q|/p_{T} (nReco>2);#Delta|q|/p_{T} [GeV^{-1}];Events", 120, -0.08, 0.08),
+        "delta_abs_q_over_pt_more_than_two"
+    )
 
     h_all_muon_pt = df2.Histo1D(
         (f"hist_pt_{all_muon_label}", f"{all_muon_label} muon p_{{T}};p_{{T}} [GeV];Events", 350, 0, 300),
@@ -1442,6 +1557,8 @@ def main():
     main_hists = [
         h_total_sym,
         h_total,
+        h_total_ndsa_eq2, h_total_ndsa_gt2,
+        h_total_sym_ndsa_eq2, h_total_sym_ndsa_gt2,
         h_pt_tag, h_eta_tag, h_phi_tag, h_charge_tag,
         h_pt_probe, h_eta_probe, h_phi_probe, h_charge_probe,
         h_tag_dz_abs, h_tag_dxy_abs,
@@ -1452,6 +1569,9 @@ def main():
         h_pt_ratio_probe_over_tag, h_pt_asymmetry_probe_tag,
         h_tag_abs_q_over_pt, h_probe_abs_q_over_pt,
         h_delta_abs_q_over_pt,
+        h_pt_ratio_probe_over_tag_ndsa_eq2, h_pt_ratio_probe_over_tag_ndsa_gt2,
+        h_pt_asymmetry_probe_tag_ndsa_eq2, h_pt_asymmetry_probe_tag_ndsa_gt2,
+        h_delta_abs_q_over_pt_ndsa_eq2, h_delta_abs_q_over_pt_ndsa_gt2,
         h_all_muon_pt
     ]
 
@@ -1463,6 +1583,10 @@ def main():
     control_specs = [
         (h_total.GetValue(), "Tot_pthist.png"),
         (h_total_sym.GetValue(), "Tot_pthist_sym.png"),
+        (h_total_ndsa_eq2.GetValue(), "Tot_pthist_ndsa_eq2.png"),
+        (h_total_ndsa_gt2.GetValue(), "Tot_pthist_ndsa_gt2.png"),
+        (h_total_sym_ndsa_eq2.GetValue(), "Tot_pthist_sym_ndsa_eq2.png"),
+        (h_total_sym_ndsa_gt2.GetValue(), "Tot_pthist_sym_ndsa_gt2.png"),
         (h_pt_tag.GetValue(), "hist_pt_tag.png"),
         (h_eta_tag.GetValue(), "hist_eta_tag.png"),
         (h_phi_tag.GetValue(), "hist_phi_tag.png"),
@@ -1486,6 +1610,12 @@ def main():
         (h_tag_abs_q_over_pt.GetValue(), "hist_tag_abs_q_over_pt.png"),
         (h_probe_abs_q_over_pt.GetValue(), "hist_probe_abs_q_over_pt.png"),
         (h_delta_abs_q_over_pt.GetValue(), "hist_delta_abs_q_over_pt.png"),
+        (h_pt_ratio_probe_over_tag_ndsa_eq2.GetValue(), "hist_pt_ratio_probe_over_tag_ndsa_eq2.png"),
+        (h_pt_ratio_probe_over_tag_ndsa_gt2.GetValue(), "hist_pt_ratio_probe_over_tag_ndsa_gt2.png"),
+        (h_pt_asymmetry_probe_tag_ndsa_eq2.GetValue(), "hist_pt_asymmetry_probe_tag_ndsa_eq2.png"),
+        (h_pt_asymmetry_probe_tag_ndsa_gt2.GetValue(), "hist_pt_asymmetry_probe_tag_ndsa_gt2.png"),
+        (h_delta_abs_q_over_pt_ndsa_eq2.GetValue(), "hist_delta_abs_q_over_pt_ndsa_eq2.png"),
+        (h_delta_abs_q_over_pt_ndsa_gt2.GetValue(), "hist_delta_abs_q_over_pt_ndsa_gt2.png"),
         (h_all_muon_pt.GetValue(), f"hist_pT_{all_muon_label}.png"),
     ]
 
@@ -1537,6 +1667,51 @@ def main():
         out,
         os.path.join(base_dir, "Control_plots", "abs_qOverPt_comparison.png"),
         name="abs_qOverPt_compare"
+    )
+    make_labeled_overlay_plot(
+        h_total_ndsa_eq2.GetValue(),
+        h_total_ndsa_gt2.GetValue(),
+        "nReco = 2",
+        "nReco > 2",
+        out,
+        os.path.join(base_dir, "Control_plots", "Tot_pthist_ndsa_split_comparison.png"),
+        name="Tot_pthist_ndsa_split_compare"
+    )
+    make_labeled_overlay_plot(
+        h_total_sym_ndsa_eq2.GetValue(),
+        h_total_sym_ndsa_gt2.GetValue(),
+        "nReco = 2",
+        "nReco > 2",
+        out,
+        os.path.join(base_dir, "Control_plots", "Tot_pthist_sym_ndsa_split_comparison.png"),
+        name="Tot_pthist_sym_ndsa_split_compare"
+    )
+    make_labeled_overlay_plot(
+        h_pt_ratio_probe_over_tag_ndsa_eq2.GetValue(),
+        h_pt_ratio_probe_over_tag_ndsa_gt2.GetValue(),
+        "nReco = 2",
+        "nReco > 2",
+        out,
+        os.path.join(base_dir, "Control_plots", "pt_ratio_probe_over_tag_ndsa_split_comparison.png"),
+        name="pt_ratio_probe_over_tag_ndsa_split_compare"
+    )
+    make_labeled_overlay_plot(
+        h_pt_asymmetry_probe_tag_ndsa_eq2.GetValue(),
+        h_pt_asymmetry_probe_tag_ndsa_gt2.GetValue(),
+        "nReco = 2",
+        "nReco > 2",
+        out,
+        os.path.join(base_dir, "Control_plots", "pt_asymmetry_probe_tag_ndsa_split_comparison.png"),
+        name="pt_asymmetry_probe_tag_ndsa_split_compare"
+    )
+    make_labeled_overlay_plot(
+        h_delta_abs_q_over_pt_ndsa_eq2.GetValue(),
+        h_delta_abs_q_over_pt_ndsa_gt2.GetValue(),
+        "nReco = 2",
+        "nReco > 2",
+        out,
+        os.path.join(base_dir, "Control_plots", "delta_abs_q_over_pt_ndsa_split_comparison.png"),
+        name="delta_abs_q_over_pt_ndsa_split_compare"
     )
     save_2d_plot(
         h2_tag_pterr_vs_pt.GetValue(),
