@@ -87,6 +87,11 @@ struct AnalysisOutput {
     RVec<double> probe_normalized_chi2;
     RVec<double> probe_primary_hit_count;
     RVec<double> probe_secondary_hit_count;
+    RVec<double> pt_ratio_probe_over_tag;
+    RVec<double> pt_asymmetry_probe_tag;
+    RVec<double> delta_abs_q_over_pt;
+    RVec<double> tag_abs_q_over_pt;
+    RVec<double> probe_abs_q_over_pt;
     RVec<double> all_muon_pt;
     RVec<double> tag_dz_abs;
     RVec<double> tag_dxy_abs;
@@ -198,6 +203,11 @@ AnalysisOutput analyze_event(
         out.probe_normalized_chi2.push_back(probe_normalized_chi2);
         out.probe_primary_hit_count.push_back(probe_primary_hit_count);
         out.probe_secondary_hit_count.push_back(probe_secondary_hit_count);
+        out.pt_ratio_probe_over_tag.push_back(pt[j] / pt[i]);
+        out.pt_asymmetry_probe_tag.push_back((pt[j] - pt[i]) / (pt[j] + pt[i]));
+        out.delta_abs_q_over_pt.push_back(inv_up - inv_down);
+        out.tag_abs_q_over_pt.push_back(inv_down);
+        out.probe_abs_q_over_pt.push_back(inv_up);
     }
 
     return out;
@@ -1252,6 +1262,11 @@ def main():
            .Define("probe_normalized_chi2", "ana.probe_normalized_chi2")
            .Define("probe_primary_hit_count", "ana.probe_primary_hit_count")
            .Define("probe_secondary_hit_count", "ana.probe_secondary_hit_count")
+           .Define("pt_ratio_probe_over_tag", "ana.pt_ratio_probe_over_tag")
+           .Define("pt_asymmetry_probe_tag", "ana.pt_asymmetry_probe_tag")
+           .Define("delta_abs_q_over_pt", "ana.delta_abs_q_over_pt")
+           .Define("tag_abs_q_over_pt", "ana.tag_abs_q_over_pt")
+           .Define("probe_abs_q_over_pt", "ana.probe_abs_q_over_pt")
            .Define("all_muon_pt", "ana.all_muon_pt")
            .Define("tag_dz_abs", "ana.tag_dz_abs")
            .Define("tag_dxy_abs", "ana.tag_dxy_abs")
@@ -1331,6 +1346,31 @@ def main():
         "probe_pt",
         "probe_pt_err_over_pt"
     )
+    h_pt_ratio_probe_over_tag = df2.Histo1D(
+        ("hist_pt_ratio_probe_over_tag", "Probe p_{T} / Tag p_{T};probe p_{T} / tag p_{T};Events", 120, 0.0, 3.0),
+        "pt_ratio_probe_over_tag"
+    )
+    h_pt_asymmetry_probe_tag = df2.Histo1D(
+        ("hist_pt_asymmetry_probe_tag", "(Probe p_{T} - Tag p_{T}) / (Probe p_{T} + Tag p_{T});p_{T} asymmetry;Events", 120, -1.0, 1.0),
+        "pt_asymmetry_probe_tag"
+    )
+    h_tag_abs_q_over_pt = df2.Histo1D(
+        ("hist_tag_abs_q_over_pt", "Tag |q|/p_{T};|q|/p_{T} [GeV^{-1}];Events", 120, 0.0, 0.12),
+        "tag_abs_q_over_pt"
+    )
+    h_probe_abs_q_over_pt = df2.Histo1D(
+        ("hist_probe_abs_q_over_pt", "Probe |q|/p_{T};|q|/p_{T} [GeV^{-1}];Events", 120, 0.0, 0.12),
+        "probe_abs_q_over_pt"
+    )
+    h_delta_abs_q_over_pt = df2.Histo1D(
+        ("hist_delta_abs_q_over_pt", "Probe |q|/p_{T} - Tag |q|/p_{T};#Delta|q|/p_{T} [GeV^{-1}];Events", 120, -0.08, 0.08),
+        "delta_abs_q_over_pt"
+    )
+    h2_probe_vs_tag_pt = df2.Histo2D(
+        ("hist2_probe_vs_tag_pt", "Probe p_{T} vs Tag p_{T};tag p_{T} [GeV];probe p_{T} [GeV]", 80, 0.0, 400.0, 80, 0.0, 400.0),
+        "tag_pt",
+        "probe_pt"
+    )
 
     h_all_muon_pt = df2.Histo1D(
         (f"hist_pt_{all_muon_label}", f"{all_muon_label} muon p_{{T}};p_{{T}} [GeV];Events", 350, 0, 300),
@@ -1409,6 +1449,9 @@ def main():
         h_tag_chi2, h_probe_chi2,
         h_tag_primary_hits, h_probe_primary_hits,
         h_tag_secondary_hits, h_probe_secondary_hits,
+        h_pt_ratio_probe_over_tag, h_pt_asymmetry_probe_tag,
+        h_tag_abs_q_over_pt, h_probe_abs_q_over_pt,
+        h_delta_abs_q_over_pt,
         h_all_muon_pt
     ]
 
@@ -1438,6 +1481,11 @@ def main():
         (h_probe_primary_hits.GetValue(), f"hist_probe_{primary_hit_label}.png"),
         (h_tag_secondary_hits.GetValue(), f"hist_tag_{secondary_hit_label}.png"),
         (h_probe_secondary_hits.GetValue(), f"hist_probe_{secondary_hit_label}.png"),
+        (h_pt_ratio_probe_over_tag.GetValue(), "hist_pt_ratio_probe_over_tag.png"),
+        (h_pt_asymmetry_probe_tag.GetValue(), "hist_pt_asymmetry_probe_tag.png"),
+        (h_tag_abs_q_over_pt.GetValue(), "hist_tag_abs_q_over_pt.png"),
+        (h_probe_abs_q_over_pt.GetValue(), "hist_probe_abs_q_over_pt.png"),
+        (h_delta_abs_q_over_pt.GetValue(), "hist_delta_abs_q_over_pt.png"),
         (h_all_muon_pt.GetValue(), f"hist_pT_{all_muon_label}.png"),
     ]
 
@@ -1483,6 +1531,13 @@ def main():
         os.path.join(base_dir, "Control_plots", "pt_tag_probe_comparison.png"),
         name="pt_tag_probe_compare"
     )
+    make_overlay_plot(
+        h_tag_abs_q_over_pt.GetValue(),
+        h_probe_abs_q_over_pt.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "abs_qOverPt_comparison.png"),
+        name="abs_qOverPt_compare"
+    )
     save_2d_plot(
         h2_tag_pterr_vs_pt.GetValue(),
         out,
@@ -1494,6 +1549,12 @@ def main():
         out,
         os.path.join(base_dir, "Control_plots", "probe_ptErrOverPt_vs_pt.png"),
         name="probe_ptErrOverPt_vs_pt"
+    )
+    save_2d_plot(
+        h2_probe_vs_tag_pt.GetValue(),
+        out,
+        os.path.join(base_dir, "Control_plots", "probe_vs_tag_pt.png"),
+        name="probe_vs_tag_pt"
     )
     make_profile_overlay_plot(
         h2_tag_pterr_vs_pt.GetValue(),
