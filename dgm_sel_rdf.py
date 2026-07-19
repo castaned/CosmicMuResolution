@@ -70,6 +70,7 @@ using namespace ROOT::VecOps;
 
 struct AnalysisOutput {
     RVec<double> resolutions;
+    RVec<double> symmetric_resolutions;
     RVec<double> tag_pt;
     RVec<double> tag_eta;
     RVec<double> tag_phi;
@@ -165,8 +166,12 @@ AnalysisOutput analyze_event(
         if (inv_down == 0.) continue;
 
         const double resolution = (inv_up - inv_down) / (inv_down);
+        const double inv_avg = 0.5 * (inv_up + inv_down);
+        if (inv_avg == 0.) continue;
+        const double symmetric_resolution = (inv_up - inv_down) / inv_avg;
 
         out.resolutions.push_back(resolution);
+        out.symmetric_resolutions.push_back(symmetric_resolution);
 
         out.tag_pt.push_back(pt[i]);
         out.tag_eta.push_back(eta[i]);
@@ -505,7 +510,20 @@ def draw_graph_and_save(graph, canvas_name, out_file, out_path, logx):
 # ============================================================
 # Plot and fit
 # ============================================================
-def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max, out_file, logx=True):
+def fit_and_draw(
+    hlist,
+    bin_type,
+    x_title,
+    base_dir,
+    muon_type,
+    res_min,
+    res_max,
+    out_file,
+    logx=True,
+    name_suffix="",
+    residual_axis_label="q/p_{T} residual",
+    residual_summary_label="q/p_{T} relative residual",
+):
     means, mean_errs = [], []
     sigmas, sigma_errs = [], []
     chi2ndf_vals = []
@@ -523,9 +541,9 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
     hybrid_csv_rows = []
     double_csv_rows = []
 
-    canvas_all = ROOT.TCanvas(f"All_plots_{bin_type}", f"{bin_type} Histograms", 1500, 1000)
-    canvas_all_hybrid = ROOT.TCanvas(f"All_plots_{bin_type}_hybrid", f"{bin_type} Histograms Hybrid", 1500, 1000)
-    canvas_all_double = ROOT.TCanvas(f"All_plots_{bin_type}_double", f"{bin_type} Histograms Double", 1500, 1000)
+    canvas_all = ROOT.TCanvas(f"All_plots_{bin_type}{name_suffix}", f"{bin_type} Histograms{name_suffix}", 1500, 1000)
+    canvas_all_hybrid = ROOT.TCanvas(f"All_plots_{bin_type}{name_suffix}_hybrid", f"{bin_type} Histograms Hybrid{name_suffix}", 1500, 1000)
+    canvas_all_double = ROOT.TCanvas(f"All_plots_{bin_type}{name_suffix}_double", f"{bin_type} Histograms Double{name_suffix}", 1500, 1000)
     n = len(hlist)
     nx = 3
     ny = (n + nx - 1) // nx
@@ -538,9 +556,9 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         centers.append(0.5 * (low + high))
         halfwidths.append(0.5 * (high - low))
 
-        c = ROOT.TCanvas(f"c_{bin_type}_{i}", f"{bin_type}_{low}_{high}", 800, 600)
-        c_hybrid = ROOT.TCanvas(f"c_{bin_type}_{i}_hybrid", f"{bin_type}_{low}_{high}_hybrid", 800, 600)
-        c_double = ROOT.TCanvas(f"c_{bin_type}_{i}_double", f"{bin_type}_{low}_{high}_double", 800, 600)
+        c = ROOT.TCanvas(f"c_{bin_type}_{i}{name_suffix}", f"{bin_type}_{low}_{high}{name_suffix}", 800, 600)
+        c_hybrid = ROOT.TCanvas(f"c_{bin_type}_{i}{name_suffix}_hybrid", f"{bin_type}_{low}_{high}{name_suffix}_hybrid", 800, 600)
+        c_double = ROOT.TCanvas(f"c_{bin_type}_{i}{name_suffix}_double", f"{bin_type}_{low}_{high}{name_suffix}_double", 800, 600)
         c.SetGrid()
         c_hybrid.SetGrid()
         c_double.SetGrid()
@@ -613,7 +631,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         h.SetStats(0)
         h.Draw()
         h.GetYaxis().SetTitle("Events")
-        h.GetXaxis().SetTitle("q/p_{T} residual")
+        h.GetXaxis().SetTitle(residual_axis_label)
 
         if entries > 5:
             fit.Draw("same")
@@ -630,8 +648,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
 
         out_file.cd()
         h.Write()
-        fit.Write(f"fit_{bin_type}_{int(low)}_{int(high)}")
-        c.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}.png"))
+        fit.Write(f"fit_{bin_type}_{int(low)}_{int(high)}{name_suffix}")
+        c.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}{name_suffix}.png"))
 
         canvas_all.cd(i + 1)
         h.Draw()
@@ -641,7 +659,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         c_hybrid.cd()
         h.Draw()
         h.GetYaxis().SetTitle("Events")
-        h.GetXaxis().SetTitle("q/p_{T} residual")
+        h.GetXaxis().SetTitle(residual_axis_label)
 
         if hybrid_result["fit_model"] == "double" and entries > 10:
             hybrid_fit.Draw("same")
@@ -659,8 +677,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         leg_hybrid.AddEntry(0, f"#chi^2/NDF = {hybrid_result['chi2_ndf']:.4f}", "")
         leg_hybrid.Draw()
 
-        hybrid_fit.Write(f"fit_hybrid_{bin_type}_{int(low)}_{int(high)}")
-        c_hybrid.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}_hybrid.png"))
+        hybrid_fit.Write(f"fit_hybrid_{bin_type}_{int(low)}_{int(high)}{name_suffix}")
+        c_hybrid.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}{name_suffix}_hybrid.png"))
 
         canvas_all_hybrid.cd(i + 1)
         h.Draw()
@@ -672,7 +690,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         c_double.cd()
         h.Draw()
         h.GetYaxis().SetTitle("Events")
-        h.GetXaxis().SetTitle("q/p_{T} residual")
+        h.GetXaxis().SetTitle(residual_axis_label)
 
         if entries > 10:
             dg_fit.Draw("same")
@@ -688,17 +706,17 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
             leg_double.AddEntry(0, f"#chi^2/NDF = {double_result['chi2_ndf']:.4f}", "")
             leg_double.Draw()
 
-        dg_fit.Write(f"fit_double_{bin_type}_{int(low)}_{int(high)}")
-        c_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}_double.png"))
+        dg_fit.Write(f"fit_double_{bin_type}_{int(low)}_{int(high)}{name_suffix}")
+        c_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_{muon_type}_{int(low)}_{int(high)}{name_suffix}_double.png"))
 
         canvas_all_double.cd(i + 1)
         h.Draw()
         if entries > 10:
             dg_fit.Draw("same")
 
-    canvas_all.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits.png"))
-    canvas_all_hybrid.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits_hybrid.png"))
-    canvas_all_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits_double.png"))
+    canvas_all.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits{name_suffix}.png"))
+    canvas_all_hybrid.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits{name_suffix}_hybrid.png"))
+    canvas_all_double.SaveAs(os.path.join(base_dir, f"{bin_type}_Plots", f"{muon_type}_{bin_type}_all_fits{name_suffix}_double.png"))
 
     g_mean = ROOT.TGraphErrors(
         len(hlist),
@@ -707,15 +725,15 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(mean_errs),
     )
-    g_mean.SetName(f"{bin_type}_mean_total")
-    g_mean.SetTitle(f"{bin_type} mean;{x_title};Mean of q/p_{{T}} relative residual")
+    g_mean.SetName(f"{bin_type}_mean_total{name_suffix}")
+    g_mean.SetTitle(f"{bin_type} mean;{x_title};Mean of {residual_summary_label}")
     g_mean.SetMarkerStyle(8)
     g_mean.SetLineWidth(2)
     draw_graph_and_save(
         g_mean,
         f"c_mean_{bin_type}",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total{name_suffix}.png"),
         logx
     )
 
@@ -726,15 +744,15 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(sigma_errs),
     )
-    g_sigma.SetName(f"{bin_type}_sigma_total")
-    g_sigma.SetTitle(f"{bin_type} sigma;{x_title};#sigma of q/p_{{T}} relative residual")
+    g_sigma.SetName(f"{bin_type}_sigma_total{name_suffix}")
+    g_sigma.SetTitle(f"{bin_type} sigma;{x_title};#sigma of {residual_summary_label}")
     g_sigma.SetMarkerStyle(8)
     g_sigma.SetLineWidth(2)
     draw_graph_and_save(
         g_sigma,
         f"c_sigma_{bin_type}",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total{name_suffix}.png"),
         logx
     )
 
@@ -745,7 +763,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c([0.0] * len(hlist)),
     )
-    g_chi2ndf.SetName(f"{bin_type}_chi2ndf_total")
+    g_chi2ndf.SetName(f"{bin_type}_chi2ndf_total{name_suffix}")
     g_chi2ndf.SetTitle(f"{bin_type} #chi^{{2}}/NDF;{x_title};#chi^{{2}}/NDF")
     g_chi2ndf.SetMarkerStyle(8)
     g_chi2ndf.SetLineWidth(2)
@@ -753,7 +771,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_chi2ndf,
         f"c_chi2ndf_{bin_type}",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total{name_suffix}.png"),
         logx
     )
 
@@ -764,8 +782,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(hybrid_mean_errs),
     )
-    g_hybrid_mean.SetName(f"{bin_type}_mean_total_hybrid")
-    g_hybrid_mean.SetTitle(f"{bin_type} hybrid mean;{x_title};Mean of q/p_{{T}} relative residual")
+    g_hybrid_mean.SetName(f"{bin_type}_mean_total{name_suffix}_hybrid")
+    g_hybrid_mean.SetTitle(f"{bin_type} hybrid mean;{x_title};Mean of {residual_summary_label}")
     g_hybrid_mean.SetMarkerStyle(29)
     g_hybrid_mean.SetMarkerColor(ROOT.kOrange + 7)
     g_hybrid_mean.SetLineColor(ROOT.kOrange + 7)
@@ -774,7 +792,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_hybrid_mean,
         f"c_mean_{bin_type}_hybrid",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total_hybrid.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total{name_suffix}_hybrid.png"),
         logx
     )
 
@@ -785,8 +803,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(hybrid_sigma_errs),
     )
-    g_hybrid_sigma.SetName(f"{bin_type}_sigma_total_hybrid")
-    g_hybrid_sigma.SetTitle(f"{bin_type} hybrid sigma;{x_title};#sigma of q/p_{{T}} relative residual")
+    g_hybrid_sigma.SetName(f"{bin_type}_sigma_total{name_suffix}_hybrid")
+    g_hybrid_sigma.SetTitle(f"{bin_type} hybrid sigma;{x_title};#sigma of {residual_summary_label}")
     g_hybrid_sigma.SetMarkerStyle(29)
     g_hybrid_sigma.SetMarkerColor(ROOT.kOrange + 7)
     g_hybrid_sigma.SetLineColor(ROOT.kOrange + 7)
@@ -795,7 +813,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_hybrid_sigma,
         f"c_sigma_{bin_type}_hybrid",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total_hybrid.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_total{name_suffix}_hybrid.png"),
         logx
     )
 
@@ -806,7 +824,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c([0.0] * len(hlist)),
     )
-    g_hybrid_chi2ndf.SetName(f"{bin_type}_chi2ndf_total_hybrid")
+    g_hybrid_chi2ndf.SetName(f"{bin_type}_chi2ndf_total{name_suffix}_hybrid")
     g_hybrid_chi2ndf.SetTitle(f"{bin_type} hybrid #chi^{{2}}/NDF;{x_title};#chi^{{2}}/NDF")
     g_hybrid_chi2ndf.SetMarkerStyle(29)
     g_hybrid_chi2ndf.SetMarkerColor(ROOT.kOrange + 7)
@@ -816,7 +834,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_hybrid_chi2ndf,
         f"c_chi2ndf_{bin_type}_hybrid",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total_hybrid.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total{name_suffix}_hybrid.png"),
         logx
     )
 
@@ -827,8 +845,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(dg_mean_errs),
     )
-    g_double_mean.SetName(f"{bin_type}_mean_total_double")
-    g_double_mean.SetTitle(f"{bin_type} double-gaussian mean;{x_title};Mean of q/p_{{T}} relative residual")
+    g_double_mean.SetName(f"{bin_type}_mean_total{name_suffix}_double")
+    g_double_mean.SetTitle(f"{bin_type} double-gaussian mean;{x_title};Mean of {residual_summary_label}")
     g_double_mean.SetMarkerStyle(22)
     g_double_mean.SetMarkerColor(ROOT.kBlue + 1)
     g_double_mean.SetLineColor(ROOT.kBlue + 1)
@@ -837,7 +855,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_double_mean,
         f"c_mean_{bin_type}_double",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total_double.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_mean_total{name_suffix}_double.png"),
         logx
     )
 
@@ -848,8 +866,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(dg_sigma_eff_errs),
     )
-    g_double_sigma_eff.SetName(f"{bin_type}_sigma_eff_total_double")
-    g_double_sigma_eff.SetTitle(f"{bin_type} double-gaussian effective sigma;{x_title};#sigma_{{eff}} of q/p_{{T}} relative residual")
+    g_double_sigma_eff.SetName(f"{bin_type}_sigma_eff_total{name_suffix}_double")
+    g_double_sigma_eff.SetTitle(f"{bin_type} double-gaussian effective sigma;{x_title};#sigma_{{eff}} of {residual_summary_label}")
     g_double_sigma_eff.SetMarkerStyle(22)
     g_double_sigma_eff.SetMarkerColor(ROOT.kBlue + 1)
     g_double_sigma_eff.SetLineColor(ROOT.kBlue + 1)
@@ -858,7 +876,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_double_sigma_eff,
         f"c_sigmaeff_{bin_type}_double",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_eff_total_double.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_eff_total{name_suffix}_double.png"),
         logx
     )
 
@@ -869,8 +887,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(dg_sigma_core_errs),
     )
-    g_double_sigma_core.SetName(f"{bin_type}_sigma_core_total_double")
-    g_double_sigma_core.SetTitle(f"{bin_type} double-gaussian core sigma;{x_title};#sigma_{{core}} of q/p_{{T}} relative residual")
+    g_double_sigma_core.SetName(f"{bin_type}_sigma_core_total{name_suffix}_double")
+    g_double_sigma_core.SetTitle(f"{bin_type} double-gaussian core sigma;{x_title};#sigma_{{core}} of {residual_summary_label}")
     g_double_sigma_core.SetMarkerStyle(23)
     g_double_sigma_core.SetMarkerColor(ROOT.kGreen + 2)
     g_double_sigma_core.SetLineColor(ROOT.kGreen + 2)
@@ -879,7 +897,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_double_sigma_core,
         f"c_sigmacore_{bin_type}_double",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_core_total_double.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_core_total{name_suffix}_double.png"),
         logx
     )
 
@@ -890,8 +908,8 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(dg_sigma_tail_errs),
     )
-    g_double_sigma_tail.SetName(f"{bin_type}_sigma_tail_total_double")
-    g_double_sigma_tail.SetTitle(f"{bin_type} double-gaussian tail sigma;{x_title};#sigma_{{tail}} of q/p_{{T}} relative residual")
+    g_double_sigma_tail.SetName(f"{bin_type}_sigma_tail_total{name_suffix}_double")
+    g_double_sigma_tail.SetTitle(f"{bin_type} double-gaussian tail sigma;{x_title};#sigma_{{tail}} of {residual_summary_label}")
     g_double_sigma_tail.SetMarkerStyle(21)
     g_double_sigma_tail.SetMarkerColor(ROOT.kRed + 1)
     g_double_sigma_tail.SetLineColor(ROOT.kRed + 1)
@@ -900,7 +918,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_double_sigma_tail,
         f"c_sigmatail_{bin_type}_double",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_tail_total_double.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_sigma_tail_total{name_suffix}_double.png"),
         logx
     )
 
@@ -911,7 +929,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c(dg_frac_core_errs),
     )
-    g_double_frac_core.SetName(f"{bin_type}_frac_core_total_double")
+    g_double_frac_core.SetName(f"{bin_type}_frac_core_total{name_suffix}_double")
     g_double_frac_core.SetTitle(f"{bin_type} double-gaussian core fraction;{x_title};f_{{core}}")
     g_double_frac_core.SetMarkerStyle(20)
     g_double_frac_core.SetMarkerColor(ROOT.kMagenta + 2)
@@ -921,7 +939,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_double_frac_core,
         f"c_fraccore_{bin_type}_double",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_frac_core_total_double.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_frac_core_total{name_suffix}_double.png"),
         logx
     )
 
@@ -932,7 +950,7 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         array_to_c(halfwidths),
         array_to_c([0.0] * len(hlist)),
     )
-    g_double_chi2ndf.SetName(f"{bin_type}_chi2ndf_total_double")
+    g_double_chi2ndf.SetName(f"{bin_type}_chi2ndf_total{name_suffix}_double")
     g_double_chi2ndf.SetTitle(f"{bin_type} double-gaussian #chi^{{2}}/NDF;{x_title};#chi^{{2}}/NDF")
     g_double_chi2ndf.SetMarkerStyle(22)
     g_double_chi2ndf.SetMarkerColor(ROOT.kBlue + 1)
@@ -942,15 +960,15 @@ def fit_and_draw(hlist, bin_type, x_title, base_dir, muon_type, res_min, res_max
         g_double_chi2ndf,
         f"c_chi2ndf_{bin_type}_double",
         out_file,
-        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total_double.png"),
+        os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_chi2ndf_total{name_suffix}_double.png"),
         logx
     )
 
-    csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary.csv")
+    csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary{name_suffix}.csv")
     write_fit_csv(csv_path, csv_rows)
-    hybrid_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary_hybrid.csv")
+    hybrid_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary{name_suffix}_hybrid.csv")
     write_hybrid_fit_csv(hybrid_csv_path, hybrid_csv_rows)
-    double_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary_double.csv")
+    double_csv_path = os.path.join(base_dir, f"{bin_type}_Plots", f"{bin_type}_fit_summary{name_suffix}_double.csv")
     write_double_fit_csv(double_csv_path, double_csv_rows)
 
 
@@ -1155,6 +1173,7 @@ def main():
 
     df2 = (
         df1.Define("resolutions", "ana.resolutions")
+           .Define("symmetric_resolutions", "ana.symmetric_resolutions")
            .Define("tag_pt", "ana.tag_pt")
            .Define("tag_eta", "ana.tag_eta")
            .Define("tag_phi", "ana.tag_phi")
@@ -1173,6 +1192,10 @@ def main():
     h_total = df2.Histo1D(
         ("Tot_pthist", "q/pT Residual distribution;q/p_{T} residual;Events", 80, res_min, res_max),
         "resolutions"
+    )
+    h_total_sym = df2.Histo1D(
+        ("Tot_pthist_sym", "Symmetric q/pT Residual distribution;symmetric q/p_{T} residual;Events", 80, res_min, res_max),
+        "symmetric_resolutions"
     )
 
     h_pt_tag = df2.Histo1D(("hist_pt_tag", "Tag muon p_{T};p_{T} [GeV];Events", 350, 0, 300), "tag_pt")
@@ -1211,43 +1234,68 @@ def main():
 
     df_bins = df2
     pt_histos = []
+    pt_histos_sym = []
     dz_histos = []
+    dz_histos_sym = []
     dxy_histos = []
+    dxy_histos_sym = []
 
     for i in range(len(args.pt_bins) - 1):
         low, high = args.pt_bins[i], args.pt_bins[i + 1]
         cname = f"res_pt_bin_{i}"
+        cname_sym = f"res_pt_bin_{i}_sym"
         df_bins = df_bins.Define(cname, f"filter_by_bin(resolutions, tag_pt, {low}, {high})")
+        df_bins = df_bins.Define(cname_sym, f"filter_by_bin(symmetric_resolutions, tag_pt, {low}, {high})")
         h = df_bins.Histo1D(
             (f"pt_{int(low)}_{int(high)}", f"pT {low}-{high};q/p_{{T}} residual;Events", 100, res_min, res_max),
             cname
         )
+        h_sym = df_bins.Histo1D(
+            (f"pt_{int(low)}_{int(high)}_sym", f"pT {low}-{high};symmetric q/p_{{T}} residual;Events", 100, res_min, res_max),
+            cname_sym
+        )
         pt_histos.append((low, high, h))
+        pt_histos_sym.append((low, high, h_sym))
 
     for i in range(len(args.dz_bins) - 1):
         low, high = args.dz_bins[i], args.dz_bins[i + 1]
         cname = f"res_dz_bin_{i}"
+        cname_sym = f"res_dz_bin_{i}_sym"
         df_bins = df_bins.Define(cname, f"filter_by_bin(resolutions, tag_dz_abs, {low}, {high})")
+        df_bins = df_bins.Define(cname_sym, f"filter_by_bin(symmetric_resolutions, tag_dz_abs, {low}, {high})")
         h = df_bins.Histo1D(
             (f"dz_{int(low)}_{int(high)}", f"|dz| {low}-{high};q/p_{{T}} residual;Events", 100, res_min, res_max),
             cname
         )
+        h_sym = df_bins.Histo1D(
+            (f"dz_{int(low)}_{int(high)}_sym", f"|dz| {low}-{high};symmetric q/p_{{T}} residual;Events", 100, res_min, res_max),
+            cname_sym
+        )
         dz_histos.append((low, high, h))
+        dz_histos_sym.append((low, high, h_sym))
 
     for i in range(len(args.dxy_bins) - 1):
         low, high = args.dxy_bins[i], args.dxy_bins[i + 1]
         cname = f"res_dxy_bin_{i}"
+        cname_sym = f"res_dxy_bin_{i}_sym"
         df_bins = df_bins.Define(cname, f"filter_by_bin(resolutions, tag_dxy_abs, {low}, {high})")
+        df_bins = df_bins.Define(cname_sym, f"filter_by_bin(symmetric_resolutions, tag_dxy_abs, {low}, {high})")
         h = df_bins.Histo1D(
             (f"dxy_{int(low)}_{int(high)}", f"|dxy| {low}-{high};q/p_{{T}} residual;Events", 100, res_min, res_max),
             cname
         )
+        h_sym = df_bins.Histo1D(
+            (f"dxy_{int(low)}_{int(high)}_sym", f"|dxy| {low}-{high};symmetric q/p_{{T}} residual;Events", 100, res_min, res_max),
+            cname_sym
+        )
         dxy_histos.append((low, high, h))
+        dxy_histos_sym.append((low, high, h_sym))
 
     out_path = os.path.join(args.outdir, output_name)
     out = ROOT.TFile(out_path, "RECREATE")
 
     main_hists = [
+        h_total_sym,
         h_total,
         h_pt_tag, h_eta_tag, h_phi_tag, h_charge_tag,
         h_pt_probe, h_eta_probe, h_phi_probe, h_charge_probe,
@@ -1262,6 +1310,7 @@ def main():
         h.Write()
 
     control_specs = [
+        (h_total_sym.GetValue(), "Tot_pthist_sym.png"),
         (h_pt_tag.GetValue(), "hist_pt_tag.png"),
         (h_eta_tag.GetValue(), "hist_eta_tag.png"),
         (h_phi_tag.GetValue(), "hist_phi_tag.png"),
@@ -1302,6 +1351,48 @@ def main():
     fit_and_draw(pt_histos, "pt", "p_{T}^{tag} [GeV]", base_dir, args.muon_type, res_min, res_max, out, logx=True)
     fit_and_draw(dz_histos, "dz", "|dz|", base_dir, args.muon_type, res_min, res_max, out, logx=True)
     fit_and_draw(dxy_histos, "dxy", "|dxy|", base_dir, args.muon_type, res_min, res_max, out, logx=True)
+    fit_and_draw(
+        pt_histos_sym,
+        "pt",
+        "p_{T}^{tag} [GeV]",
+        base_dir,
+        args.muon_type,
+        res_min,
+        res_max,
+        out,
+        logx=True,
+        name_suffix="_sym",
+        residual_axis_label="symmetric q/p_{T} residual",
+        residual_summary_label="symmetric q/p_{T} relative residual",
+    )
+    fit_and_draw(
+        dz_histos_sym,
+        "dz",
+        "|dz|",
+        base_dir,
+        args.muon_type,
+        res_min,
+        res_max,
+        out,
+        logx=True,
+        name_suffix="_sym",
+        residual_axis_label="symmetric q/p_{T} residual",
+        residual_summary_label="symmetric q/p_{T} relative residual",
+    )
+    fit_and_draw(
+        dxy_histos_sym,
+        "dxy",
+        "|dxy|",
+        base_dir,
+        args.muon_type,
+        res_min,
+        res_max,
+        out,
+        logx=True,
+        name_suffix="_sym",
+        residual_axis_label="symmetric q/p_{T} residual",
+        residual_summary_label="symmetric q/p_{T} relative residual",
+    )
 
     out.Close()
     print(f"Done. Output written to: {out_path}")

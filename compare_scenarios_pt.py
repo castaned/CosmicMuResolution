@@ -152,11 +152,11 @@ def load_scenario_graphs(files, scenario_names, source_name, bin_type, suffix):
     return graphs
 
 
-def compare_family(files, outdir, bin_type, scenario_names, scenario_labels):
-    mean_name = f"{bin_type}_mean_total"
-    sigma_name = f"{bin_type}_sigma_total"
-    hybrid_mean_name = f"{bin_type}_mean_total_hybrid"
-    hybrid_sigma_name = f"{bin_type}_sigma_total_hybrid"
+def compare_family(files, outdir, bin_type, scenario_names, scenario_labels, source_suffix="", output_suffix="", ytitle_prefix=""):
+    mean_name = f"{bin_type}_mean_total{source_suffix}"
+    sigma_name = f"{bin_type}_sigma_total{source_suffix}"
+    hybrid_mean_name = f"{bin_type}_mean_total{source_suffix}_hybrid"
+    hybrid_sigma_name = f"{bin_type}_sigma_total{source_suffix}_hybrid"
 
     mean_graphs = load_scenario_graphs(files, scenario_names, mean_name, bin_type, "mean")
     sigma_graphs = load_scenario_graphs(files, scenario_names, sigma_name, bin_type, "sigma")
@@ -179,8 +179,8 @@ def compare_family(files, outdir, bin_type, scenario_names, scenario_labels):
         mean_graphs,
         scenario_labels,
         f"{bin_type} mean scenario comparison",
-        "Mean of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_mean_scenarios.png"),
+        f"Mean of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean{output_suffix}_scenarios.png"),
         bin_type
     )
 
@@ -188,8 +188,8 @@ def compare_family(files, outdir, bin_type, scenario_names, scenario_labels):
         sigma_graphs,
         scenario_labels,
         f"{bin_type} sigma scenario comparison",
-        "#sigma of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_sigma_scenarios.png"),
+        f"#sigma of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma{output_suffix}_scenarios.png"),
         bin_type
     )
 
@@ -197,8 +197,8 @@ def compare_family(files, outdir, bin_type, scenario_names, scenario_labels):
         hybrid_mean_graphs,
         scenario_labels,
         f"{bin_type} hybrid mean scenario comparison",
-        "Mean of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_mean_hybrid_scenarios.png"),
+        f"Mean of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean{output_suffix}_hybrid_scenarios.png"),
         bin_type
     )
 
@@ -206,8 +206,8 @@ def compare_family(files, outdir, bin_type, scenario_names, scenario_labels):
         hybrid_sigma_graphs,
         scenario_labels,
         f"{bin_type} hybrid sigma scenario comparison",
-        "#sigma of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_sigma_hybrid_scenarios.png"),
+        f"#sigma of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma{output_suffix}_hybrid_scenarios.png"),
         bin_type
     )
 
@@ -248,6 +248,10 @@ def resolve_scenarios(args):
     raise ValueError("Provide either legacy --baseline/--tagonly/--tagprobe inputs or the new --inputs/--labels/--names triplet")
 
 
+def has_graphs(files, graph_name):
+    return all(files[name].Get(graph_name) for name in files)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Compare baseline, tag-only, and tag+probe for pt, dz, dxy")
     parser.add_argument("--baseline", help="Baseline ROOT file")
@@ -275,6 +279,20 @@ def main():
         out_root.cd()
         for key, graph in graphs.items():
             graph.Write(f"{bin_type}_{key}")
+        if has_graphs(files, f"{bin_type}_mean_total_sym"):
+            sym_graphs = compare_family(
+                files,
+                args.outdir,
+                bin_type,
+                scenario_names,
+                scenario_labels,
+                source_suffix="_sym",
+                output_suffix="_sym",
+                ytitle_prefix="symmetric ",
+            )
+            out_root.cd()
+            for key, graph in sym_graphs.items():
+                graph.Write(f"{bin_type}_{key}_sym")
 
     out_root.Close()
 

@@ -180,13 +180,13 @@ def load_comparison_graphs(f_mc, f_data, source_name, mc_name, data_name):
     return g_mc.Clone(mc_name), g_data.Clone(data_name)
 
 
-def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
-    mean_name = f"{bin_type}_mean_total"
-    sigma_name = f"{bin_type}_sigma_total"
-    hybrid_mean_name = f"{bin_type}_mean_total_hybrid"
-    hybrid_sigma_name = f"{bin_type}_sigma_total_hybrid"
-    double_mean_name = f"{bin_type}_mean_total_double"
-    sigma_eff_name = f"{bin_type}_sigma_eff_total_double"
+def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label, source_suffix="", output_suffix="", ytitle_prefix=""):
+    mean_name = f"{bin_type}_mean_total{source_suffix}"
+    sigma_name = f"{bin_type}_sigma_total{source_suffix}"
+    hybrid_mean_name = f"{bin_type}_mean_total{source_suffix}_hybrid"
+    hybrid_sigma_name = f"{bin_type}_sigma_total{source_suffix}_hybrid"
+    double_mean_name = f"{bin_type}_mean_total{source_suffix}_double"
+    sigma_eff_name = f"{bin_type}_sigma_eff_total{source_suffix}_double"
 
     g_mean_mc, g_mean_data = load_comparison_graphs(
         f_mc, f_data, mean_name, f"{bin_type}_mean_mc", f"{bin_type}_mean_data"
@@ -224,8 +224,8 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         g_mean_mc,
         g_mean_data,
         f"{bin_type} mean comparison",
-        "Mean of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_mean_mc_vs_data.png"),
+        f"Mean of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean{output_suffix}_mc_vs_data.png"),
         bin_type,
         left_label,
         right_label
@@ -235,8 +235,8 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         g_sigma_mc,
         g_sigma_data,
         f"{bin_type} sigma comparison",
-        "#sigma of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_sigma_mc_vs_data.png"),
+        f"#sigma of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma{output_suffix}_mc_vs_data.png"),
         bin_type,
         left_label,
         right_label
@@ -246,8 +246,8 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         g_hybrid_mean_mc,
         g_hybrid_mean_data,
         f"{bin_type} hybrid mean comparison",
-        "Mean of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_mean_hybrid_mc_vs_data.png"),
+        f"Mean of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean{output_suffix}_hybrid_mc_vs_data.png"),
         bin_type,
         left_label,
         right_label
@@ -257,8 +257,8 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         g_hybrid_sigma_mc,
         g_hybrid_sigma_data,
         f"{bin_type} hybrid sigma comparison",
-        "#sigma of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_sigma_hybrid_mc_vs_data.png"),
+        f"#sigma of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma{output_suffix}_hybrid_mc_vs_data.png"),
         bin_type,
         left_label,
         right_label
@@ -268,8 +268,8 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         g_double_mean_mc,
         g_double_mean_data,
         f"{bin_type} double-gaussian mean comparison",
-        "Mean of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_mean_double_mc_vs_data.png"),
+        f"Mean of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_mean{output_suffix}_double_mc_vs_data.png"),
         bin_type,
         left_label,
         right_label
@@ -279,8 +279,8 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         g_sigma_eff_mc,
         g_sigma_eff_data,
         f"{bin_type} double-gaussian effective sigma comparison",
-        "#sigma_{eff} of q/p_{T} relative residual",
-        os.path.join(outdir, f"{bin_type}_sigma_eff_double_mc_vs_data.png"),
+        f"#sigma_{{eff}} of {ytitle_prefix}q/p_{{T}} relative residual",
+        os.path.join(outdir, f"{bin_type}_sigma_eff{output_suffix}_double_mc_vs_data.png"),
         bin_type,
         left_label,
         right_label
@@ -300,6 +300,10 @@ def compare_family(f_mc, f_data, outdir, bin_type, left_label, right_label):
         "sigma_eff_double_mc": g_sigma_eff_mc,
         "sigma_eff_double_data": g_sigma_eff_data,
     }
+
+
+def has_graph_pair(f_mc, f_data, source_name):
+    return bool(f_mc.Get(source_name) and f_data.Get(source_name))
 
 
 def main():
@@ -338,6 +342,31 @@ def main():
         graphs["mean_double_data"].Write(f"{bin_type}_mean_double_data")
         graphs["sigma_eff_double_mc"].Write(f"{bin_type}_sigma_eff_double_mc")
         graphs["sigma_eff_double_data"].Write(f"{bin_type}_sigma_eff_double_data")
+        if has_graph_pair(f_mc, f_data, f"{bin_type}_mean_total_sym"):
+            sym_graphs = compare_family(
+                f_mc,
+                f_data,
+                args.outdir,
+                bin_type,
+                args.left_label,
+                args.period,
+                source_suffix="_sym",
+                output_suffix="_sym",
+                ytitle_prefix="symmetric ",
+            )
+            out_root.cd()
+            sym_graphs["mean_mc"].Write(f"{bin_type}_mean_mc_sym")
+            sym_graphs["mean_data"].Write(f"{bin_type}_mean_data_sym")
+            sym_graphs["sigma_mc"].Write(f"{bin_type}_sigma_mc_sym")
+            sym_graphs["sigma_data"].Write(f"{bin_type}_sigma_data_sym")
+            sym_graphs["mean_hybrid_mc"].Write(f"{bin_type}_mean_hybrid_mc_sym")
+            sym_graphs["mean_hybrid_data"].Write(f"{bin_type}_mean_hybrid_data_sym")
+            sym_graphs["sigma_hybrid_mc"].Write(f"{bin_type}_sigma_hybrid_mc_sym")
+            sym_graphs["sigma_hybrid_data"].Write(f"{bin_type}_sigma_hybrid_data_sym")
+            sym_graphs["mean_double_mc"].Write(f"{bin_type}_mean_double_mc_sym")
+            sym_graphs["mean_double_data"].Write(f"{bin_type}_mean_double_data_sym")
+            sym_graphs["sigma_eff_double_mc"].Write(f"{bin_type}_sigma_eff_double_mc_sym")
+            sym_graphs["sigma_eff_double_data"].Write(f"{bin_type}_sigma_eff_double_data_sym")
 
     out_root.Close()
     f_mc.Close()
