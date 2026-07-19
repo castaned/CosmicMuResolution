@@ -1418,6 +1418,7 @@ def main():
         h.Write()
 
     control_specs = [
+        (h_total.GetValue(), "Tot_pthist.png"),
         (h_total_sym.GetValue(), "Tot_pthist_sym.png"),
         (h_pt_tag.GetValue(), "hist_pt_tag.png"),
         (h_eta_tag.GetValue(), "hist_eta_tag.png"),
