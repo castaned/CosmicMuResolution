@@ -101,6 +101,9 @@ AnalysisOutput analyze_event(
     bool hlt,
     const RVec<float>& pt,
     const RVec<float>& ptErr,
+    const RVec<float>& normalizedChi2,
+    const RVec<int>& primaryHitCount,
+    const RVec<int>& secondaryHitCount,
     const RVec<float>& eta,
     const RVec<float>& phi,
     const RVec<float>& dz,
@@ -113,7 +116,13 @@ AnalysisOutput analyze_event(
     bool requireTrigger,
     double min_pt,
     double max_rel_pt_err_tag,
-    double max_rel_pt_err_probe
+    double max_rel_pt_err_probe,
+    double max_normalized_chi2_tag,
+    double max_normalized_chi2_probe,
+    int min_primary_hit_count_tag,
+    int min_primary_hit_count_probe,
+    int min_secondary_hit_count_tag,
+    int min_secondary_hit_count_probe
 ) {
     AnalysisOutput out;
 
@@ -135,9 +144,21 @@ AnalysisOutput analyze_event(
 
         const double tag_rel_pt_err = ptErr[i] / pt[i];
         const double probe_rel_pt_err = ptErr[j] / pt[j];
+        const double tag_normalized_chi2 = normalizedChi2[i];
+        const double probe_normalized_chi2 = normalizedChi2[j];
+        const int tag_primary_hit_count = primaryHitCount[i];
+        const int probe_primary_hit_count = primaryHitCount[j];
+        const int tag_secondary_hit_count = secondaryHitCount[i];
+        const int probe_secondary_hit_count = secondaryHitCount[j];
 
         if (max_rel_pt_err_tag >= 0.0 && tag_rel_pt_err >= max_rel_pt_err_tag) continue;
         if (max_rel_pt_err_probe >= 0.0 && probe_rel_pt_err >= max_rel_pt_err_probe) continue;
+        if (max_normalized_chi2_tag >= 0.0 && tag_normalized_chi2 >= max_normalized_chi2_tag) continue;
+        if (max_normalized_chi2_probe >= 0.0 && probe_normalized_chi2 >= max_normalized_chi2_probe) continue;
+        if (min_primary_hit_count_tag >= 0 && tag_primary_hit_count < min_primary_hit_count_tag) continue;
+        if (min_primary_hit_count_probe >= 0 && probe_primary_hit_count < min_primary_hit_count_probe) continue;
+        if (min_secondary_hit_count_tag >= 0 && tag_secondary_hit_count < min_secondary_hit_count_tag) continue;
+        if (min_secondary_hit_count_probe >= 0 && probe_secondary_hit_count < min_secondary_hit_count_probe) continue;
 
         const double inv_up = std::abs(charge[j] / pt[j]);
         const double inv_down = std::abs(charge[i] / pt[i]);
@@ -987,6 +1008,12 @@ def main():
     parser.add_argument("--res-range", type=parse_bin_list, default=None, help='Residual plot range as "xmin,xmax"')
     parser.add_argument("--max-rel-pt-err-tag", type=float, default=None, help="Maximum allowed ptError/pt for tag muon")
     parser.add_argument("--max-rel-pt-err-probe", type=float, default=None, help="Maximum allowed ptError/pt for probe muon")
+    parser.add_argument("--max-normalized-chi2-tag", type=float, default=None, help="Maximum allowed normalized chi2 for tag muon")
+    parser.add_argument("--max-normalized-chi2-probe", type=float, default=None, help="Maximum allowed normalized chi2 for probe muon")
+    parser.add_argument("--min-primary-hit-count-tag", type=int, default=None, help="Minimum allowed primary hit count for tag muon")
+    parser.add_argument("--min-primary-hit-count-probe", type=int, default=None, help="Minimum allowed primary hit count for probe muon")
+    parser.add_argument("--min-secondary-hit-count-tag", type=int, default=None, help="Minimum allowed secondary hit count for tag muon")
+    parser.add_argument("--min-secondary-hit-count-probe", type=int, default=None, help="Minimum allowed secondary hit count for probe muon")
 
     args = parser.parse_args()
 
@@ -1012,11 +1039,29 @@ def main():
 
     max_rel_pt_err_tag = args.max_rel_pt_err_tag if args.max_rel_pt_err_tag is not None else -1.0
     max_rel_pt_err_probe = args.max_rel_pt_err_probe if args.max_rel_pt_err_probe is not None else -1.0
+    max_normalized_chi2_tag = args.max_normalized_chi2_tag if args.max_normalized_chi2_tag is not None else -1.0
+    max_normalized_chi2_probe = args.max_normalized_chi2_probe if args.max_normalized_chi2_probe is not None else -1.0
+    min_primary_hit_count_tag = args.min_primary_hit_count_tag if args.min_primary_hit_count_tag is not None else -1
+    min_primary_hit_count_probe = args.min_primary_hit_count_probe if args.min_primary_hit_count_probe is not None else -1
+    min_secondary_hit_count_tag = args.min_secondary_hit_count_tag if args.min_secondary_hit_count_tag is not None else -1
+    min_secondary_hit_count_probe = args.min_secondary_hit_count_probe if args.min_secondary_hit_count_probe is not None else -1
 
     if max_rel_pt_err_tag >= 0:
         print(f"Applying tag ptError/pt cut   < {max_rel_pt_err_tag}")
     if max_rel_pt_err_probe >= 0:
         print(f"Applying probe ptError/pt cut < {max_rel_pt_err_probe}")
+    if max_normalized_chi2_tag >= 0:
+        print(f"Applying tag normalized chi2 cut   < {max_normalized_chi2_tag}")
+    if max_normalized_chi2_probe >= 0:
+        print(f"Applying probe normalized chi2 cut < {max_normalized_chi2_probe}")
+    if min_primary_hit_count_tag >= 0:
+        print(f"Applying tag primary-hit cut   >= {min_primary_hit_count_tag}")
+    if min_primary_hit_count_probe >= 0:
+        print(f"Applying probe primary-hit cut >= {min_primary_hit_count_probe}")
+    if min_secondary_hit_count_tag >= 0:
+        print(f"Applying tag secondary-hit cut   >= {min_secondary_hit_count_tag}")
+    if min_secondary_hit_count_probe >= 0:
+        print(f"Applying probe secondary-hit cut >= {min_secondary_hit_count_probe}")
 
     file_vec = ROOT.std.vector("string")()
     for f in files:
@@ -1035,6 +1080,9 @@ def main():
     if args.muon_type == "DSA":
         pt_branch = "dmu_dsa_pt"
         pterr_branch = "dmu_dsa_ptError"
+        chi2_branch = "dmu_dsa_normalizedChi2"
+        primary_hit_count_branch = "dmu_dsa_nValidMuonDTHits"
+        secondary_hit_count_branch = "dmu_dsa_nValidStripHits"
         eta_branch = "dmu_dsa_eta"
         phi_branch = "dmu_dsa_phi"
         dz_branch = "dmu_dsa_dz"
@@ -1049,6 +1097,9 @@ def main():
     else:
         pt_branch = "dmu_dgl_pt"
         pterr_branch = "dmu_dgl_ptError"
+        chi2_branch = "dmu_dgl_normalizedChi2"
+        primary_hit_count_branch = "dmu_dgl_nMuonHits"
+        secondary_hit_count_branch = "dmu_dgl_nValidStripHits"
         eta_branch = "dmu_dgl_eta"
         phi_branch = "dmu_dgl_phi"
         dz_branch = "dmu_dgl_dz"
@@ -1069,6 +1120,9 @@ def main():
             HLT_L2Mu10_NoVertex_NoBPTX3BX,
             {pt_branch},
             {pterr_branch},
+            {chi2_branch},
+            {primary_hit_count_branch},
+            {secondary_hit_count_branch},
             {eta_branch},
             {phi_branch},
             {dz_branch},
@@ -1081,7 +1135,13 @@ def main():
             {require_trigger_cpp},
             {args.min_pt},
             {max_rel_pt_err_tag},
-            {max_rel_pt_err_probe}
+            {max_rel_pt_err_probe},
+            {max_normalized_chi2_tag},
+            {max_normalized_chi2_probe},
+            {min_primary_hit_count_tag},
+            {min_primary_hit_count_probe},
+            {min_secondary_hit_count_tag},
+            {min_secondary_hit_count_probe}
         )
         """
     )
@@ -1249,4 +1309,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
