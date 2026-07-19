@@ -1302,20 +1302,23 @@ def main():
         ("hist_probe_chi2", "Probe normalized #chi^{2};normalized #chi^{2};Events", 100, 0.0, 20.0),
         "probe_normalized_chi2"
     )
+    primary_hit_label = "ValidMuonDTHits" if args.muon_type == "DSA" else "MuonHits"
+    secondary_hit_label = "ValidStripHits"
+
     h_tag_primary_hits = df2.Histo1D(
-        ("hist_tag_primaryHits", "Tag primary hit count;primary hit count;Events", 80, 0.0, 80.0),
+        ("hist_tag_primaryHits", f"Tag {primary_hit_label};{primary_hit_label};Events", 80, 0.0, 80.0),
         "tag_primary_hit_count"
     )
     h_probe_primary_hits = df2.Histo1D(
-        ("hist_probe_primaryHits", "Probe primary hit count;primary hit count;Events", 80, 0.0, 80.0),
+        ("hist_probe_primaryHits", f"Probe {primary_hit_label};{primary_hit_label};Events", 80, 0.0, 80.0),
         "probe_primary_hit_count"
     )
     h_tag_secondary_hits = df2.Histo1D(
-        ("hist_tag_secondaryHits", "Tag secondary hit count;secondary hit count;Events", 80, 0.0, 80.0),
+        ("hist_tag_secondaryHits", f"Tag {secondary_hit_label};{secondary_hit_label};Events", 80, 0.0, 80.0),
         "tag_secondary_hit_count"
     )
     h_probe_secondary_hits = df2.Histo1D(
-        ("hist_probe_secondaryHits", "Probe secondary hit count;secondary hit count;Events", 80, 0.0, 80.0),
+        ("hist_probe_secondaryHits", f"Probe {secondary_hit_label};{secondary_hit_label};Events", 80, 0.0, 80.0),
         "probe_secondary_hit_count"
     )
     h2_tag_pterr_vs_pt = df2.Histo2D(
@@ -1430,10 +1433,10 @@ def main():
         (h_probe_pt_err_over_pt.GetValue(), "hist_probe_ptErrOverPt.png"),
         (h_tag_chi2.GetValue(), "hist_tag_chi2.png"),
         (h_probe_chi2.GetValue(), "hist_probe_chi2.png"),
-        (h_tag_primary_hits.GetValue(), "hist_tag_primaryHits.png"),
-        (h_probe_primary_hits.GetValue(), "hist_probe_primaryHits.png"),
-        (h_tag_secondary_hits.GetValue(), "hist_tag_secondaryHits.png"),
-        (h_probe_secondary_hits.GetValue(), "hist_probe_secondaryHits.png"),
+        (h_tag_primary_hits.GetValue(), f"hist_tag_{primary_hit_label}.png"),
+        (h_probe_primary_hits.GetValue(), f"hist_probe_{primary_hit_label}.png"),
+        (h_tag_secondary_hits.GetValue(), f"hist_tag_{secondary_hit_label}.png"),
+        (h_probe_secondary_hits.GetValue(), f"hist_probe_{secondary_hit_label}.png"),
         (h_all_muon_pt.GetValue(), f"hist_pT_{all_muon_label}.png"),
     ]
 
@@ -1461,15 +1464,15 @@ def main():
         h_tag_primary_hits.GetValue(),
         h_probe_primary_hits.GetValue(),
         out,
-        os.path.join(base_dir, "Control_plots", "primary_hits_comparison.png"),
-        name="primaryHits_compare"
+        os.path.join(base_dir, "Control_plots", f"{primary_hit_label}_comparison.png"),
+        name=f"{primary_hit_label}_compare"
     )
     make_overlay_plot(
         h_tag_secondary_hits.GetValue(),
         h_probe_secondary_hits.GetValue(),
         out,
-        os.path.join(base_dir, "Control_plots", "secondary_hits_comparison.png"),
-        name="secondaryHits_compare"
+        os.path.join(base_dir, "Control_plots", f"{secondary_hit_label}_comparison.png"),
+        name=f"{secondary_hit_label}_compare"
     )
 
     make_overlay_plot(
