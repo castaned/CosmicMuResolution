@@ -1059,7 +1059,7 @@ def make_overlay_plot(h_tag, h_probe, out_file, out_png, name="overlay"):
     c.SaveAs(out_png)
 
 
-def make_labeled_overlay_plot(h_a, h_b, label_a, label_b, out_file, out_png, name="overlay_labeled"):
+def make_labeled_overlay_plot(h_a, h_b, label_a, label_b, out_file, out_png, name="overlay_labeled", normalize=False):
     c = ROOT.TCanvas(f"c_{name}", "", 800, 600)
     c.SetGrid()
 
@@ -1072,6 +1072,13 @@ def make_labeled_overlay_plot(h_a, h_b, label_a, label_b, out_file, out_png, nam
     h_b.SetLineWidth(2)
     h_a.SetStats(0)
     h_b.SetStats(0)
+
+    if normalize:
+        if h_a.Integral() > 0:
+            h_a.Scale(1.0 / h_a.Integral())
+        if h_b.Integral() > 0:
+            h_b.Scale(1.0 / h_b.Integral())
+        h_a.GetYaxis().SetTitle("Normalized events")
 
     max_y = max(h_a.GetMaximum(), h_b.GetMaximum())
     h_a.SetMaximum(1.2 * max_y if max_y > 0 else 1.0)
@@ -1675,7 +1682,8 @@ def main():
         "nReco > 2",
         out,
         os.path.join(base_dir, "Control_plots", "Tot_pthist_ndsa_split_comparison.png"),
-        name="Tot_pthist_ndsa_split_compare"
+        name="Tot_pthist_ndsa_split_compare",
+        normalize=True
     )
     make_labeled_overlay_plot(
         h_total_sym_ndsa_eq2.GetValue(),
@@ -1684,7 +1692,8 @@ def main():
         "nReco > 2",
         out,
         os.path.join(base_dir, "Control_plots", "Tot_pthist_sym_ndsa_split_comparison.png"),
-        name="Tot_pthist_sym_ndsa_split_compare"
+        name="Tot_pthist_sym_ndsa_split_compare",
+        normalize=True
     )
     make_labeled_overlay_plot(
         h_pt_ratio_probe_over_tag_ndsa_eq2.GetValue(),
@@ -1693,7 +1702,8 @@ def main():
         "nReco > 2",
         out,
         os.path.join(base_dir, "Control_plots", "pt_ratio_probe_over_tag_ndsa_split_comparison.png"),
-        name="pt_ratio_probe_over_tag_ndsa_split_compare"
+        name="pt_ratio_probe_over_tag_ndsa_split_compare",
+        normalize=True
     )
     make_labeled_overlay_plot(
         h_pt_asymmetry_probe_tag_ndsa_eq2.GetValue(),
@@ -1702,7 +1712,8 @@ def main():
         "nReco > 2",
         out,
         os.path.join(base_dir, "Control_plots", "pt_asymmetry_probe_tag_ndsa_split_comparison.png"),
-        name="pt_asymmetry_probe_tag_ndsa_split_compare"
+        name="pt_asymmetry_probe_tag_ndsa_split_compare",
+        normalize=True
     )
     make_labeled_overlay_plot(
         h_delta_abs_q_over_pt_ndsa_eq2.GetValue(),
@@ -1711,7 +1722,8 @@ def main():
         "nReco > 2",
         out,
         os.path.join(base_dir, "Control_plots", "delta_abs_q_over_pt_ndsa_split_comparison.png"),
-        name="delta_abs_q_over_pt_ndsa_split_compare"
+        name="delta_abs_q_over_pt_ndsa_split_compare",
+        normalize=True
     )
     save_2d_plot(
         h2_tag_pterr_vs_pt.GetValue(),
