@@ -1,0 +1,253 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{ifthen}
+
+% ============================================================
+% User configuration
+% ============================================================
+\newcommand{\Campaign}{2022F}
+\newcommand{\SelectionMode}{symmetric}
+\newcommand{\PeriodLabel}{Run \Campaign}
+
+% Edit these folder paths to point to the analysis outputs you want to present.
+\newcommand{\DGLBaseDir}{../results_full_scan_DGL_2022F_symmetric}
+\newcommand{\DSABaseDir}{../results_full_scan_DSA_2022F_symmetric}
+
+% ============================================================
+% Helpers
+% ============================================================
+\newcommand{\tightLooseTable}{
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Quantity & Relaxed & Tight \\
+    \midrule
+    Tag/probe pairing & Upstream ntuplizer & Same upstream pairing \\
+    $p_{T}^{err}/p_{T}$ (DGL) & not applied & $< 0.3$ on tag and probe \\
+    $\chi^{2}$ (DGL) & not applied & $< 5$ on tag and probe \\
+    MuonHits (DGL) & not applied & $\geq 13$ on tag and probe \\
+    ValidStripHits (DGL) & not applied & $\geq 6$ on tag and probe \\
+    $p_{T}^{err}/p_{T}$ (DSA) & not applied & $< 0.2$ on tag and probe \\
+    $\chi^{2}$ (DSA) & not applied & $< 5$ on tag and probe \\
+    ValidMuonDTHits (DSA) & not applied & $\geq 31$ on tag and probe \\
+    \bottomrule
+  \end{tabular}
+}
+
+\newcommand{\legacyTable}{
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Scenario & Tag & Probe \\
+    \midrule
+    Baseline & no extra cut & no extra cut \\
+    TagOnly & $p_{T}^{err}/p_{T} < 0.2$ & no extra cut \\
+    TagProbe & $p_{T}^{err}/p_{T} < 0.2$ & $p_{T}^{err}/p_{T} < 0.2$ \\
+    \bottomrule
+  \end{tabular}
+}
+
+\newcommand{\plotornote}[2]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{#1}%
+  }{%
+    \begin{tikzpicture}
+      \draw[rounded corners=4pt, thick, gray!70] (0,0) rectangle (11.6,5.8);
+      \node[align=center, text width=10.4cm] at (5.8,2.9) {\Large Missing plot\\[0.4em]\normalsize #2\\[0.6em]\ttfamily #1};
+    \end{tikzpicture}%
+  }%
+}
+
+\newcommand{\twoplots}[4]{%
+  \begin{columns}[T,onlytextwidth]
+    \column{0.49\textwidth}
+    \centering
+    \plotornote{#1}{#2}
+    \column{0.49\textwidth}
+    \centering
+    \plotornote{#3}{#4}
+  \end{columns}
+}
+
+\newcommand{\threebulletsummary}[3]{%
+  \begin{itemize}
+    \item #1
+    \item #2
+    \item #3
+  \end{itemize}
+}
+
+\title{Cosmic Muon Resolution Studies}
+\subtitle{Selection Scenarios, Control Plots, and MC vs Data}
+\author{Alfredo Casta\~neda}
+\date{July 19, 2026}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Agenda}
+  \tableofcontents
+\end{frame}
+
+\section{Selection Strategy}
+
+\begin{frame}{Goal of This Update}
+  \threebulletsummary
+    {Compare a loose/relaxed selection against a tight symmetric tag--probe selection.}
+    {Use control plots to understand whether tag/probe differences are driven by asymmetric selection or by kinematics such as probe $p_{T}$.}
+    {Summarize the final MC vs Data comparison for the key observables: $p_{T}$ mean and $p_{T}$ sigma, for both DGL and DSA.}
+\end{frame}
+
+\begin{frame}{Scenario Definitions}
+  \begin{block}{Symmetric workflow}
+    \tightLooseTable
+  \end{block}
+  \vspace{0.5em}
+  \begin{itemize}
+    \item The tag/probe identity still comes from the ntuplizer.
+    \item The tight scenario adds the same quality cuts to both legs of the pair.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Legacy Reference}
+  \begin{block}{Original three-scenario study}
+    \legacyTable
+  \end{block}
+  \vspace{0.5em}
+  \begin{itemize}
+    \item Useful as a historical baseline.
+    \item The symmetric workflow is intended to reduce tag/probe quality bias.
+  \end{itemize}
+\end{frame}
+
+\section{Control Plots}
+
+\begin{frame}{What To Check in The Control Plots}
+  \threebulletsummary
+    {If tag and probe show different $p_{T}^{err}/p_{T}$ spectra, first check whether their $p_{T}$ spectra are already different.}
+    {The profile plot of $p_{T}^{err}/p_{T}$ versus $p_{T}$ helps separate a kinematic effect from a pure selection effect.}
+    {The hit-count and $\chi^{2}$ overlays test whether the tight scenario really balances the track-quality distributions.}
+\end{frame}
+
+\subsection{DGL}
+
+\begin{frame}{DGL: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
+  \twoplots
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/pt_tag_probe_comparison.png}
+    {DGL DATA tight: tag vs probe $p_{T}$}
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErr_over_pt_comparison.png}
+    {DGL DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
+\end{frame}
+
+\begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
+  \twoplots
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/tag_ptErrOverPt_vs_pt.png}
+    {DGL DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/probe_ptErrOverPt_vs_pt.png}
+    {DGL DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
+  \vspace{0.4em}
+  \centering
+  \plotornote{\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}{DGL DATA tight: profile comparison}
+\end{frame}
+
+\begin{frame}{DGL: Track-Quality Control Plots}
+  \twoplots
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/chi2_comparison.png}
+    {DGL DATA tight: $\chi^{2}$ comparison}
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/MuonHits_comparison.png}
+    {DGL DATA tight: MuonHits comparison}
+  \vspace{0.4em}
+  \centering
+  \plotornote{\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ValidStripHits_comparison.png}{DGL DATA tight: ValidStripHits comparison}
+\end{frame}
+
+\subsection{DSA}
+
+\begin{frame}{DSA: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
+  \twoplots
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/pt_tag_probe_comparison.png}
+    {DSA DATA tight: tag vs probe $p_{T}$}
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErr_over_pt_comparison.png}
+    {DSA DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
+\end{frame}
+
+\begin{frame}{DSA: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
+  \twoplots
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/tag_ptErrOverPt_vs_pt.png}
+    {DSA DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/probe_ptErrOverPt_vs_pt.png}
+    {DSA DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
+  \vspace{0.4em}
+  \centering
+  \plotornote{\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}{DSA DATA tight: profile comparison}
+\end{frame}
+
+\begin{frame}{DSA: Track-Quality Control Plots}
+  \twoplots
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/chi2_comparison.png}
+    {DSA DATA tight: $\chi^{2}$ comparison}
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidMuonDTHits_comparison.png}
+    {DSA DATA tight: ValidMuonDTHits comparison}
+  \vspace{0.4em}
+  \centering
+  \plotornote{\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidStripHits_comparison.png}{DSA DATA tight: ValidStripHits comparison}
+\end{frame}
+
+\section{MC vs Data}
+
+\begin{frame}{DGL: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_mean_mc_vs_data.png}
+    {DGL tight: $p_{T}$ mean, MC vs Data}
+    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_sigma_mc_vs_data.png}
+    {DGL tight: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DGL: Symmetric Residual Diagnostic}
+  \twoplots
+    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_mean_sym_mc_vs_data.png}
+    {DGL tight: symmetric residual mean}
+    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_sigma_sym_mc_vs_data.png}
+    {DGL tight: symmetric residual sigma}
+\end{frame}
+
+\begin{frame}{DSA: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_mean_mc_vs_data.png}
+    {DSA tight: $p_{T}$ mean, MC vs Data}
+    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_sigma_mc_vs_data.png}
+    {DSA tight: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DSA: Symmetric Residual Diagnostic}
+  \twoplots
+    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_mean_sym_mc_vs_data.png}
+    {DSA tight: symmetric residual mean}
+    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_sigma_sym_mc_vs_data.png}
+    {DSA tight: symmetric residual sigma}
+\end{frame}
+
+\section{Takeaways}
+
+\begin{frame}{Summary}
+  \begin{itemize}
+    \item The tight symmetric scenario is designed to reduce track-quality asymmetry between tag and probe.
+    \item The new control plots test whether the remaining differences are due to quality cuts or to different kinematics.
+    \item The symmetric residual diagnostic provides a direct cross-check on whether the original residual definition is amplifying asymmetry.
+    \item The final interpretation should be based on both the control plots and the MC vs Data behavior for DGL and DSA.
+  \end{itemize}
+\end{frame}
+
+\end{document}
