@@ -20,6 +20,10 @@
 \newcommand{\Campaign}{2022F}
 \newcommand{\SelectionMode}{symmetric}
 \newcommand{\PeriodLabel}{Run \Campaign}
+\newcommand{\DataTightDir}{DATA_tight}
+\newcommand{\DataRelaxedDir}{DATA_relaxed}
+\newcommand{\TightLabel}{tight}
+\newcommand{\RelaxedLabel}{relaxed}
 
 % Edit these folder paths to point to the analysis outputs you want to present.
 \newcommand{\DGLBaseDir}{../results_full_scan_DGL_2022F_symmetric}
@@ -122,7 +126,7 @@
   \threebulletsummary
     {Compare a loose/relaxed selection against a tight symmetric tag--probe selection.}
     {Use control plots to understand whether tag/probe differences are driven by asymmetric selection or by kinematics such as probe $p_{T}$.}
-    {Summarize the final MC vs Data comparison for the key observables: $p_{T}$ mean and $p_{T}$ sigma, for both DGL and DSA.}
+    {Summarize the final MC vs Data comparison for the key observables in both relaxed and tight categories, for DGL and DSA.}
 \end{frame}
 
 \begin{frame}{Scenario Definitions}
@@ -133,6 +137,7 @@
   \begin{itemize}
     \item The tag/probe identity still comes from the ntuplizer.
     \item The tight scenario adds the same quality cuts to both legs of the pair.
+    \item A single symmetric production run writes both `DATA_relaxed`/`MC_relaxed` and `DATA_tight`/`MC_tight`.
   \end{itemize}
 \end{frame}
 
@@ -160,53 +165,53 @@
 
 \begin{frame}{DGL: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
   \twoplots
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/pt_tag_probe_comparison.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/pt_tag_probe_comparison.png}
     {DGL DATA tight: tag vs probe $p_{T}$}
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErr_over_pt_comparison.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/ptErr_over_pt_comparison.png}
     {DGL DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
 \end{frame}
 
 \begin{frame}{DGL: Residual Distribution Comparison}
   \twoplots
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/Tot_pthist.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
     {DGL DATA tight: standard residual}
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/Tot_pthist_sym.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist_sym.png}
     {DGL DATA tight: symmetric residual}
 \end{frame}
 
 \begin{frame}{DGL: Residual Distributions vs $p_{T}$}
   \twoplots
-    {\DGLBaseDir/DATA_tight/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
     {DGL DATA tight: standard residual grid vs $p_{T}$}
-    {\DGLBaseDir/DATA_tight/DATA/DGL/pt_Plots/DGL_pt_all_fits_sym.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits_sym.png}
     {DGL DATA tight: symmetric residual grid vs $p_{T}$}
 \end{frame}
 
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
   \twoplots
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/tag_ptErrOverPt_vs_pt.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/tag_ptErrOverPt_vs_pt.png}
     {DGL DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/probe_ptErrOverPt_vs_pt.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/probe_ptErrOverPt_vs_pt.png}
     {DGL DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
 \end{frame}
 
 \begin{frame}{DGL: $p_{T}^{err}/p_{T}$ Profile Comparison}
   \singleplot
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
     {DGL DATA tight: profile comparison}
 \end{frame}
 
 \begin{frame}{DGL: Track-Quality Control Plots}
   \twoplots
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/chi2_comparison.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/chi2_comparison.png}
     {DGL DATA tight: $\chi^{2}$ comparison}
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/MuonHits_comparison.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/MuonHits_comparison.png}
     {DGL DATA tight: MuonHits comparison}
 \end{frame}
 
 \begin{frame}{DGL: ValidStripHits Control Plot}
   \singleplot
-    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ValidStripHits_comparison.png}
+    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/ValidStripHits_comparison.png}
     {DGL DATA tight: ValidStripHits comparison}
 \end{frame}
 
@@ -214,87 +219,133 @@
 
 \begin{frame}{DSA: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
   \twoplots
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/pt_tag_probe_comparison.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/pt_tag_probe_comparison.png}
     {DSA DATA tight: tag vs probe $p_{T}$}
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErr_over_pt_comparison.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ptErr_over_pt_comparison.png}
     {DSA DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
 \end{frame}
 
 \begin{frame}{DSA: Residual Distribution Comparison}
   \twoplots
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/Tot_pthist.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/Tot_pthist.png}
     {DSA DATA tight: standard residual}
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/Tot_pthist_sym.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/Tot_pthist_sym.png}
     {DSA DATA tight: symmetric residual}
 \end{frame}
 
 \begin{frame}{DSA: Residual Distributions vs $p_{T}$}
   \twoplots
-    {\DSABaseDir/DATA_tight/DATA/DSA/pt_Plots/DSA_pt_all_fits.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/pt_Plots/DSA_pt_all_fits.png}
     {DSA DATA tight: standard residual grid vs $p_{T}$}
-    {\DSABaseDir/DATA_tight/DATA/DSA/pt_Plots/DSA_pt_all_fits_sym.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/pt_Plots/DSA_pt_all_fits_sym.png}
     {DSA DATA tight: symmetric residual grid vs $p_{T}$}
 \end{frame}
 
 \begin{frame}{DSA: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
   \twoplots
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/tag_ptErrOverPt_vs_pt.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/tag_ptErrOverPt_vs_pt.png}
     {DSA DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/probe_ptErrOverPt_vs_pt.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/probe_ptErrOverPt_vs_pt.png}
     {DSA DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
 \end{frame}
 
 \begin{frame}{DSA: $p_{T}^{err}/p_{T}$ Profile Comparison}
   \singleplot
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
     {DSA DATA tight: profile comparison}
 \end{frame}
 
 \begin{frame}{DSA: Track-Quality Control Plots}
   \twoplots
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/chi2_comparison.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/chi2_comparison.png}
     {DSA DATA tight: $\chi^{2}$ comparison}
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidMuonDTHits_comparison.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ValidMuonDTHits_comparison.png}
     {DSA DATA tight: ValidMuonDTHits comparison}
 \end{frame}
 
 \begin{frame}{DSA: ValidStripHits Control Plot}
   \singleplot
-    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidStripHits_comparison.png}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ValidStripHits_comparison.png}
     {DSA DATA tight: ValidStripHits comparison}
 \end{frame}
 
 \section{MC vs Data}
 
+\begin{frame}{Relaxed Category}
+  \threebulletsummary
+    {The relaxed category is produced automatically in the symmetric workflow, together with the tight category.}
+    {It keeps the upstream tag--probe pairing but does not add the downstream symmetric quality cuts on tag and probe.}
+    {These slides let us compare whether the main MC vs Data trends are already present before the tight balancing cuts are applied.}
+\end{frame}
+
+\begin{frame}{DGL Relaxed: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_mean_mc_vs_data.png}
+    {DGL relaxed: $p_{T}$ mean, MC vs Data}
+    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_sigma_mc_vs_data.png}
+    {DGL relaxed: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DGL Relaxed: Symmetric Residual Diagnostic}
+  \twoplots
+    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_mean_sym_mc_vs_data.png}
+    {DGL relaxed: symmetric residual mean}
+    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_sigma_sym_mc_vs_data.png}
+    {DGL relaxed: symmetric residual sigma}
+\end{frame}
+
+\begin{frame}{DSA Relaxed: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_mean_mc_vs_data.png}
+    {DSA relaxed: $p_{T}$ mean, MC vs Data}
+    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_sigma_mc_vs_data.png}
+    {DSA relaxed: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DSA Relaxed: Symmetric Residual Diagnostic}
+  \twoplots
+    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_mean_sym_mc_vs_data.png}
+    {DSA relaxed: symmetric residual mean}
+    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_sigma_sym_mc_vs_data.png}
+    {DSA relaxed: symmetric residual sigma}
+\end{frame}
+
+\begin{frame}{Tight Category}
+  \threebulletsummary
+    {The tight category applies the same downstream quality cuts to both tag and probe.}
+    {This is the category designed to reduce tag/probe quality imbalance as much as possible.}
+    {Reading the relaxed and tight blocks together helps us separate intrinsic reconstruction effects from downstream selection bias.}
+\end{frame}
+
 \begin{frame}{DGL: MC vs Data Mean and Sigma}
   \twoplots
-    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_mean_mc_vs_data.png}
+    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
     {DGL tight: $p_{T}$ mean, MC vs Data}
-    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_sigma_mc_vs_data.png}
+    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
     {DGL tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
 \begin{frame}{DGL: Symmetric Residual Diagnostic}
   \twoplots
-    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_mean_sym_mc_vs_data.png}
+    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
     {DGL tight: symmetric residual mean}
-    {\DGLBaseDir/compare_MC_DATA_DGL_tight/pt_sigma_sym_mc_vs_data.png}
+    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
     {DGL tight: symmetric residual sigma}
 \end{frame}
 
 \begin{frame}{DSA: MC vs Data Mean and Sigma}
   \twoplots
-    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_mean_mc_vs_data.png}
+    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
     {DSA tight: $p_{T}$ mean, MC vs Data}
-    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_sigma_mc_vs_data.png}
+    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_sigma_mc_vs_data.png}
     {DSA tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
 \begin{frame}{DSA: Symmetric Residual Diagnostic}
   \twoplots
-    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_mean_sym_mc_vs_data.png}
+    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_sym_mc_vs_data.png}
     {DSA tight: symmetric residual mean}
-    {\DSABaseDir/compare_MC_DATA_DSA_tight/pt_sigma_sym_mc_vs_data.png}
+    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_sigma_sym_mc_vs_data.png}
     {DSA tight: symmetric residual sigma}
 \end{frame}
 
