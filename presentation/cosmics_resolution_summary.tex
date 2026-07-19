@@ -56,13 +56,13 @@
   \end{tabular}
 }
 
-\newcommand{\plotornote}[2]{%
-  \IfFileExists{#1}{%
-    \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{#1}%
+\newcommand{\plotornote}[3][0.60\textheight]{%
+  \IfFileExists{#2}{%
+    \includegraphics[width=\linewidth,height=#1,keepaspectratio]{#2}%
   }{%
     \begin{tikzpicture}
       \draw[rounded corners=4pt, thick, gray!70] (0,0) rectangle (11.6,5.8);
-      \node[align=center, text width=10.4cm] at (5.8,2.9) {\Large Missing plot\\[0.4em]\normalsize #2\\[0.6em]\ttfamily #1};
+      \node[align=center, text width=10.4cm] at (5.8,2.9) {\Large Missing plot\\[0.4em]\normalsize #3\\[0.6em]\scriptsize\ttfamily\detokenize{#2}};
     \end{tikzpicture}%
   }%
 }
@@ -71,11 +71,19 @@
   \begin{columns}[T,onlytextwidth]
     \column{0.49\textwidth}
     \centering
-    \plotornote{#1}{#2}
+    \plotornote[0.44\textheight]{#1}{#2}
     \column{0.49\textwidth}
     \centering
-    \plotornote{#3}{#4}
+    \plotornote[0.44\textheight]{#3}{#4}
   \end{columns}
+}
+
+\newcommand{\twoplotsplusone}[6]{%
+  \twoplots{#1}{#2}{#3}{#4}
+  \vspace{0.3em}
+  \begin{center}
+    \plotornote[0.22\textheight]{#5}{#6}
+  \end{center}
 }
 
 \newcommand{\threebulletsummary}[3]{%
@@ -152,25 +160,23 @@
 \end{frame}
 
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
-  \twoplots
+  \twoplotsplusone
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/tag_ptErrOverPt_vs_pt.png}
     {DGL DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/probe_ptErrOverPt_vs_pt.png}
     {DGL DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
-  \vspace{0.4em}
-  \centering
-  \plotornote{\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}{DGL DATA tight: profile comparison}
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
+    {DGL DATA tight: profile comparison}
 \end{frame}
 
 \begin{frame}{DGL: Track-Quality Control Plots}
-  \twoplots
+  \twoplotsplusone
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/chi2_comparison.png}
     {DGL DATA tight: $\chi^{2}$ comparison}
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/MuonHits_comparison.png}
     {DGL DATA tight: MuonHits comparison}
-  \vspace{0.4em}
-  \centering
-  \plotornote{\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ValidStripHits_comparison.png}{DGL DATA tight: ValidStripHits comparison}
+    {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ValidStripHits_comparison.png}
+    {DGL DATA tight: ValidStripHits comparison}
 \end{frame}
 
 \subsection{DSA}
@@ -184,25 +190,23 @@
 \end{frame}
 
 \begin{frame}{DSA: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
-  \twoplots
+  \twoplotsplusone
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/tag_ptErrOverPt_vs_pt.png}
     {DSA DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/probe_ptErrOverPt_vs_pt.png}
     {DSA DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
-  \vspace{0.4em}
-  \centering
-  \plotornote{\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}{DSA DATA tight: profile comparison}
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
+    {DSA DATA tight: profile comparison}
 \end{frame}
 
 \begin{frame}{DSA: Track-Quality Control Plots}
-  \twoplots
+  \twoplotsplusone
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/chi2_comparison.png}
     {DSA DATA tight: $\chi^{2}$ comparison}
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidMuonDTHits_comparison.png}
     {DSA DATA tight: ValidMuonDTHits comparison}
-  \vspace{0.4em}
-  \centering
-  \plotornote{\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidStripHits_comparison.png}{DSA DATA tight: ValidStripHits comparison}
+    {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidStripHits_comparison.png}
+    {DSA DATA tight: ValidStripHits comparison}
 \end{frame}
 
 \section{MC vs Data}
