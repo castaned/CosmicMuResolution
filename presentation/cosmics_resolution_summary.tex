@@ -4,6 +4,7 @@
 \usecolortheme{default}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}[frame number]
+\setbeamersize{text margin left=0.45cm, text margin right=0.45cm}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -71,11 +72,17 @@
   \begin{columns}[T,onlytextwidth]
     \column{0.49\textwidth}
     \centering
-    \plotornote[0.44\textheight]{#1}{#2}
+    \plotornote[0.52\textheight]{#1}{#2}
     \column{0.49\textwidth}
     \centering
-    \plotornote[0.44\textheight]{#3}{#4}
+    \plotornote[0.52\textheight]{#3}{#4}
   \end{columns}
+}
+
+\newcommand{\singleplot}[2]{%
+  \begin{center}
+    \plotornote[0.60\textheight]{#1}{#2}
+  \end{center}
 }
 
 \newcommand{\twoplotsplusone}[6]{%
@@ -167,22 +174,38 @@
     {DGL DATA tight: symmetric residual}
 \end{frame}
 
+\begin{frame}{DGL: Residual Distributions vs $p_{T}$}
+  \twoplots
+    {\DGLBaseDir/DATA_tight/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {DGL DATA tight: standard residual grid vs $p_{T}$}
+    {\DGLBaseDir/DATA_tight/DATA/DGL/pt_Plots/DGL_pt_all_fits_sym.png}
+    {DGL DATA tight: symmetric residual grid vs $p_{T}$}
+\end{frame}
+
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
-  \twoplotsplusone
+  \twoplots
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/tag_ptErrOverPt_vs_pt.png}
     {DGL DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/probe_ptErrOverPt_vs_pt.png}
     {DGL DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
+\end{frame}
+
+\begin{frame}{DGL: $p_{T}^{err}/p_{T}$ Profile Comparison}
+  \singleplot
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
     {DGL DATA tight: profile comparison}
 \end{frame}
 
 \begin{frame}{DGL: Track-Quality Control Plots}
-  \twoplotsplusone
+  \twoplots
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/chi2_comparison.png}
     {DGL DATA tight: $\chi^{2}$ comparison}
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/MuonHits_comparison.png}
     {DGL DATA tight: MuonHits comparison}
+\end{frame}
+
+\begin{frame}{DGL: ValidStripHits Control Plot}
+  \singleplot
     {\DGLBaseDir/DATA_tight/DATA/DGL/Control_plots/ValidStripHits_comparison.png}
     {DGL DATA tight: ValidStripHits comparison}
 \end{frame}
@@ -205,22 +228,38 @@
     {DSA DATA tight: symmetric residual}
 \end{frame}
 
+\begin{frame}{DSA: Residual Distributions vs $p_{T}$}
+  \twoplots
+    {\DSABaseDir/DATA_tight/DATA/DSA/pt_Plots/DSA_pt_all_fits.png}
+    {DSA DATA tight: standard residual grid vs $p_{T}$}
+    {\DSABaseDir/DATA_tight/DATA/DSA/pt_Plots/DSA_pt_all_fits_sym.png}
+    {DSA DATA tight: symmetric residual grid vs $p_{T}$}
+\end{frame}
+
 \begin{frame}{DSA: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
-  \twoplotsplusone
+  \twoplots
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/tag_ptErrOverPt_vs_pt.png}
     {DSA DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/probe_ptErrOverPt_vs_pt.png}
     {DSA DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
+\end{frame}
+
+\begin{frame}{DSA: $p_{T}^{err}/p_{T}$ Profile Comparison}
+  \singleplot
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
     {DSA DATA tight: profile comparison}
 \end{frame}
 
 \begin{frame}{DSA: Track-Quality Control Plots}
-  \twoplotsplusone
+  \twoplots
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/chi2_comparison.png}
     {DSA DATA tight: $\chi^{2}$ comparison}
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidMuonDTHits_comparison.png}
     {DSA DATA tight: ValidMuonDTHits comparison}
+\end{frame}
+
+\begin{frame}{DSA: ValidStripHits Control Plot}
+  \singleplot
     {\DSABaseDir/DATA_tight/DATA/DSA/Control_plots/ValidStripHits_comparison.png}
     {DSA DATA tight: ValidStripHits comparison}
 \end{frame}
