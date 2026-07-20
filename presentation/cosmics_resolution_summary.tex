@@ -168,7 +168,7 @@
 \section{DGL Controls}
 
 
-\begin{frame}{Control Plots 2022}
+\begin{frame}{DGL: Control Plots }
   \threebulletsummary
     {If tag and probe show different $p_{T}^{err}/p_{T}$ spectra, first check whether their $p_{T}$ spectra are already different.}
     {The profile plot of $p_{T}^{err}/p_{T}$ versus $p_{T}$ helps separate a kinematic effect from a pure selection effect.}
@@ -406,6 +406,8 @@
 \begin{frame}{DSA Next Steps}
   \begin{itemize}
     \item Keep the current tag/probe selection unchanged while debugging the upstream source of the bias.
+    \item Repeat the DSA study with progressively higher, identical minimum $p_{T}$ requirements for tag and probe; the spectra become more similar at higher $p_{T}$, so this may reduce the observed bias.
+    \item For each $p_{T}$ threshold, compare the residual mean and retained event count to distinguish a genuine bias reduction from a low-statistics effect.
     \item Use the dedicated ntuplizer study branch with extra DSA raw branches: \texttt{p}, \texttt{qoverp}, \texttt{qoverpError}, reference point, and side label.
     \item Study the unordered exactly-two-DSA pair summary before applying any tag/probe interpretation.
     \item Decide only after that whether the issue is mainly track parameterization, detector-side asymmetry, or something else upstream.
