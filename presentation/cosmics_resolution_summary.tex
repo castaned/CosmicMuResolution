@@ -28,6 +28,9 @@
 % Edit these folder paths to point to the analysis outputs you want to present.
 \newcommand{\DGLBaseDir}{../results_full_scan_DGL_2022F_symmetric}
 \newcommand{\DSABaseDir}{../results_full_scan_DSA_2022F_symmetric}
+\newcommand{\DGLBaseDirA}{../results_full_scan_DGL_2022F_symmetric}
+\newcommand{\DGLBaseDirB}{../results_full_scan_DGL_2023D_symmetric}
+\newcommand{\DGLBaseDirC}{../results_full_scan_DGL_2024I_symmetric}
 
 % ============================================================
 % Helpers
@@ -106,7 +109,7 @@
 }
 
 \title{Cosmic Muon Resolution Studies}
-\subtitle{Selection Scenarios, Control Plots, and MC vs Data}
+\subtitle{DGL Results by Year and DSA Bias Status}
 \author{Alfredo Casta\~neda}
 \date{July 19, 2026}
 
@@ -124,9 +127,9 @@
 
 \begin{frame}{Goal of This Update}
   \threebulletsummary
-    {Compare a loose/relaxed selection against a tight symmetric tag--probe selection.}
-    {Use control plots to understand whether tag/probe differences are driven by asymmetric selection or by kinematics such as probe $p_{T}$.}
-    {Summarize the final MC vs Data comparison for the key observables in both relaxed and tight categories, for DGL and DSA.}
+    {Establish the DGL result as the main physics message, consistently across the 2022F, 2023D, and 2024I campaigns.}
+    {Use the symmetric workflow and control plots to show that the DGL selection is stable and well behaved.}
+    {Report the current DSA bias status separately, together with the upstream ntuplizer study plan.}
 \end{frame}
 
 \begin{frame}{Scenario Definitions}
@@ -152,7 +155,7 @@
   \end{itemize}
 \end{frame}
 
-\section{Control Plots}
+\section{DGL Controls}
 
 \begin{frame}{What To Check in The Control Plots}
   \threebulletsummary
@@ -160,8 +163,6 @@
     {The profile plot of $p_{T}^{err}/p_{T}$ versus $p_{T}$ helps separate a kinematic effect from a pure selection effect.}
     {The hit-count and $\chi^{2}$ overlays test whether the tight scenario really balances the track-quality distributions.}
 \end{frame}
-
-\subsection{DGL}
 
 \begin{frame}{DGL: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
   \twoplots
@@ -215,67 +216,13 @@
     {DGL DATA tight: ValidStripHits comparison}
 \end{frame}
 
-\subsection{DSA}
+\section{DGL Results}
 
-\begin{frame}{DSA: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
-  \twoplots
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/pt_tag_probe_comparison.png}
-    {DSA DATA tight: tag vs probe $p_{T}$}
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ptErr_over_pt_comparison.png}
-    {DSA DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
-\end{frame}
-
-\begin{frame}{DSA: Residual Distribution Comparison}
-  \twoplots
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/Tot_pthist.png}
-    {DSA DATA tight: standard residual}
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/Tot_pthist_sym.png}
-    {DSA DATA tight: symmetric residual}
-\end{frame}
-
-\begin{frame}{DSA: Residual Distributions vs $p_{T}$}
-  \twoplots
-    {\DSABaseDir/\DataTightDir/DATA/DSA/pt_Plots/DSA_pt_all_fits.png}
-    {DSA DATA tight: standard residual grid vs $p_{T}$}
-    {\DSABaseDir/\DataTightDir/DATA/DSA/pt_Plots/DSA_pt_all_fits_sym.png}
-    {DSA DATA tight: symmetric residual grid vs $p_{T}$}
-\end{frame}
-
-\begin{frame}{DSA: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
-  \twoplots
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/tag_ptErrOverPt_vs_pt.png}
-    {DSA DATA tight: tag $p_{T}^{err}/p_{T}$ vs $p_{T}$}
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/probe_ptErrOverPt_vs_pt.png}
-    {DSA DATA tight: probe $p_{T}^{err}/p_{T}$ vs $p_{T}$}
-\end{frame}
-
-\begin{frame}{DSA: $p_{T}^{err}/p_{T}$ Profile Comparison}
-  \singleplot
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ptErrOverPt_vs_pt_profile_comparison.png}
-    {DSA DATA tight: profile comparison}
-\end{frame}
-
-\begin{frame}{DSA: Track-Quality Control Plots}
-  \twoplots
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/chi2_comparison.png}
-    {DSA DATA tight: $\chi^{2}$ comparison}
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ValidMuonDTHits_comparison.png}
-    {DSA DATA tight: ValidMuonDTHits comparison}
-\end{frame}
-
-\begin{frame}{DSA: ValidStripHits Control Plot}
-  \singleplot
-    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ValidStripHits_comparison.png}
-    {DSA DATA tight: ValidStripHits comparison}
-\end{frame}
-
-\section{MC vs Data}
-
-\begin{frame}{Relaxed Category}
+\begin{frame}{Reference Category}
   \threebulletsummary
-    {The relaxed category is produced automatically in the symmetric workflow, together with the tight category.}
-    {It keeps the upstream tag--probe pairing but does not add the downstream symmetric quality cuts on tag and probe.}
-    {These slides let us compare whether the main MC vs Data trends are already present before the tight balancing cuts are applied.}
+    {The DGL headline plots are based on the tight symmetric category.}
+    {This category applies the same downstream quality cuts to both tag and probe and is our default for year-to-year reporting.}
+    {Relaxed results remain available as cross-check material, but the main DGL message should be built from one consistent category across all campaigns.}
 \end{frame}
 
 \begin{frame}{Symmetric Residual Diagnostic}
@@ -294,62 +241,71 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{DGL Relaxed: MC vs Data Mean and Sigma}
+\begin{frame}{DGL 2022F: MC vs Data Mean and Sigma}
   \twoplots
-    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_mean_mc_vs_data.png}
-    {DGL relaxed: $p_{T}$ mean, MC vs Data}
-    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_sigma_mc_vs_data.png}
-    {DGL relaxed: $p_{T}$ sigma, MC vs Data}
+    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
+    {DGL 2022F tight: $p_{T}$ mean, MC vs Data}
+    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
+    {DGL 2022F tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{DGL Relaxed: Symmetric Residual Diagnostic}
+\begin{frame}{DGL 2022F: Symmetric Residual Diagnostic}
   \twoplots
-    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_mean_sym_mc_vs_data.png}
-    {DGL relaxed: symmetric residual mean}
-    {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_sigma_sym_mc_vs_data.png}
-    {DGL relaxed: symmetric residual sigma}
+    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
+    {DGL 2022F tight: symmetric residual mean}
+    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
+    {DGL 2022F tight: symmetric residual sigma}
 \end{frame}
 
-\begin{frame}{DSA Relaxed: MC vs Data Mean and Sigma}
+\begin{frame}{DGL 2023D: MC vs Data Mean and Sigma}
   \twoplots
-    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_mean_mc_vs_data.png}
-    {DSA relaxed: $p_{T}$ mean, MC vs Data}
-    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_sigma_mc_vs_data.png}
-    {DSA relaxed: $p_{T}$ sigma, MC vs Data}
+    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
+    {DGL 2023D tight: $p_{T}$ mean, MC vs Data}
+    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
+    {DGL 2023D tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{DSA Relaxed: Symmetric Residual Diagnostic}
+\begin{frame}{DGL 2023D: Symmetric Residual Diagnostic}
   \twoplots
-    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_mean_sym_mc_vs_data.png}
-    {DSA relaxed: symmetric residual mean}
-    {\DSABaseDir/compare_MC_DATA_DSA_\RelaxedLabel/pt_sigma_sym_mc_vs_data.png}
-    {DSA relaxed: symmetric residual sigma}
+    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
+    {DGL 2023D tight: symmetric residual mean}
+    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
+    {DGL 2023D tight: symmetric residual sigma}
 \end{frame}
 
-\begin{frame}{Tight Category}
+\begin{frame}{DGL 2024I: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
+    {DGL 2024I tight: $p_{T}$ mean, MC vs Data}
+    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
+    {DGL 2024I tight: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DGL 2024I: Symmetric Residual Diagnostic}
+  \twoplots
+    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
+    {DGL 2024I tight: symmetric residual mean}
+    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
+    {DGL 2024I tight: symmetric residual sigma}
+\end{frame}
+
+\begin{frame}{DGL Cross-Year Message}
   \threebulletsummary
-    {The tight category applies the same downstream quality cuts to both tag and probe.}
-    {This is the category designed to reduce tag/probe quality imbalance as much as possible.}
-    {Reading the relaxed and tight blocks together helps us separate intrinsic reconstruction effects from downstream selection bias.}
+    {The main reporting target is a stable DGL result across 2022F, 2023D, and 2024I.}
+    {The same tight symmetric category should be used for all three years to keep the interpretation clean.}
+    {Once the remaining year outputs are filled, this section becomes the main result block of the presentation.}
 \end{frame}
 
-\begin{frame}{DGL: MC vs Data Mean and Sigma}
-  \twoplots
-    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
-    {DGL tight: $p_{T}$ mean, MC vs Data}
-    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
-    {DGL tight: $p_{T}$ sigma, MC vs Data}
+\section{DSA Status}
+
+\begin{frame}{Why DSA Is Separate}
+  \threebulletsummary
+    {The DSA study is not yet a headline resolution result because the tag/probe bias remains visible after the symmetric downstream cuts.}
+    {The bias persists even for exactly-two-DSA events and also remains in the symmetric residual diagnostic.}
+    {For that reason, DSA should be presented as a status and next-step study rather than as a final resolution measurement.}
 \end{frame}
 
-\begin{frame}{DGL: Symmetric Residual Diagnostic}
-  \twoplots
-    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
-    {DGL tight: symmetric residual mean}
-    {\DGLBaseDir/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
-    {DGL tight: symmetric residual sigma}
-\end{frame}
-
-\begin{frame}{DSA: MC vs Data Mean and Sigma}
+\begin{frame}{DSA Status: Symmetric Residual Diagnostic}
   \twoplots
     {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
     {DSA tight: $p_{T}$ mean, MC vs Data}
@@ -357,7 +313,7 @@
     {DSA tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{DSA: Symmetric Residual Diagnostic}
+\begin{frame}{DSA Status: Symmetric Residual Cross-Check}
   \twoplots
     {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_sym_mc_vs_data.png}
     {DSA tight: symmetric residual mean}
@@ -365,14 +321,30 @@
     {DSA tight: symmetric residual sigma}
 \end{frame}
 
+\begin{frame}{DSA Findings So Far}
+  \threebulletsummary
+    {The probe tends to have systematically larger $p_{T}$ than the tag in DSA, and this directly explains the residual bias.}
+    {The effect remains when restricting to exactly two reconstructed DSA muons, so it is not mainly a multi-candidate probe-choice artifact.}
+    {The next investigation therefore moves upstream, into the ntuplizer and the standalone-track quantities themselves.}
+\end{frame}
+
+\begin{frame}{Approved DSA Next Steps}
+  \begin{itemize}
+    \item Keep the current tag/probe selection unchanged while debugging the upstream source of the bias.
+    \item Use the dedicated ntuplizer study branch with extra DSA raw branches: \texttt{p}, \texttt{qoverp}, \texttt{qoverpError}, reference point, and side label.
+    \item Study the unordered exactly-two-DSA pair summary before applying any tag/probe interpretation.
+    \item Decide only after that whether the issue is mainly track parameterization, detector-side asymmetry, or something else upstream.
+  \end{itemize}
+\end{frame}
+
 \section{Takeaways}
 
 \begin{frame}{Summary}
   \begin{itemize}
-    \item The tight symmetric scenario is designed to reduce track-quality asymmetry between tag and probe.
-    \item The new control plots test whether the remaining differences are due to quality cuts or to different kinematics.
-    \item The symmetric residual diagnostic provides a direct cross-check on whether the original residual definition is amplifying asymmetry.
-    \item The final interpretation should be based on both the control plots and the MC vs Data behavior for DGL and DSA.
+    \item The immediate reporting target is a clean DGL result for 2022F, 2023D, and 2024I using one consistent selection category.
+    \item The DGL control plots and MC vs Data overlays form the main physics message of the current update.
+    \item DSA remains an active bias study, not yet a final resolution result.
+    \item The upstream ntuplizer extension is the approved next step for isolating the DSA source.
   \end{itemize}
 \end{frame}
 
