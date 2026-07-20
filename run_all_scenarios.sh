@@ -31,15 +31,15 @@ fi
 
 case "${DATA_CAMPAIGN}" in
     2022F)
-        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2022F_Ntuples_v2'
+        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2022F_Ntuples_v3'
         DEFAULT_MC_CAMPAIGN="2022"
         ;;
     2023D)
-        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2023D_Ntuples_v2'
+        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2023D_Ntuples_v3'
         DEFAULT_MC_CAMPAIGN="2023"
         ;;
     2024I)
-        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2024I_Ntuples_v4'
+        DATA_DIR='/eos/user/c/castaned/Cosmics/Cosmics/CosmicsPPreco-CosmicDTLocalReco_Run2024I_Ntuples_v3'
         DEFAULT_MC_CAMPAIGN="2024"
         ;;
     *)
@@ -55,13 +55,13 @@ fi
 
 case "${MC_CAMPAIGN}" in
     2022)
-        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2022_Ntuples_v1'
+        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2022_Ntuples_v2'
         ;;
     2023)
-        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2023_Ntuples_v1'
+        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2023_Ntuples_v2'
         ;;
     2024)
-        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v3'
+        MC_DIR='/eos/user/c/castaned/Cosmics/LooseMuCosmic_Bin-P-10to3000-T0-Minus50to0_cosmuogen/CosmicsMC_Run3_2024_Ntuples_v2'
         ;;
     *)
         echo "Unsupported MC campaign: ${MC_CAMPAIGN}"
