@@ -29,6 +29,9 @@
 \newcommand{\DGLBaseDirA}{../results_full_scan_DGL_2022F_symmetric}
 \newcommand{\DGLBaseDirB}{../results_full_scan_DGL_2023D_symmetric}
 \newcommand{\DGLBaseDirC}{../results_full_scan_DGL_2024I_symmetric}
+\newcommand{\DSABaseDirA}{../results_full_scan_DSA_2022F_symmetric}
+\newcommand{\DSABaseDirB}{../results_full_scan_DSA_2023D_symmetric}
+\newcommand{\DSABaseDirC}{../results_full_scan_DSA_2024I_symmetric}
 
 % ============================================================
 % Helpers
@@ -288,15 +291,31 @@
     {For that reason, DSA should be presented as a status and next-step study rather than as a final resolution measurement.}
 \end{frame}
 
-\begin{frame}{DSA Status: MC vs Data Mean and Sigma}
+\begin{frame}{DSA 2022F Status: MC vs Data Mean and Sigma}
   \twoplots
-    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
-    {DSA tight: $p_{T}$ mean, MC vs Data}
-    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_sigma_mc_vs_data.png}
-    {DSA tight: $p_{T}$ sigma, MC vs Data}
+    {\DSABaseDirA/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
+    {DSA 2022F tight: $p_{T}$ mean, MC vs Data}
+    {\DSABaseDirA/compare_MC_DATA_DSA_\TightLabel/pt_sigma_mc_vs_data.png}
+    {DSA 2022F tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{DSA MC: Residual Distribution Comparison}
+\begin{frame}{DSA 2023D Status: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DSABaseDirB/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
+    {DSA 2023D tight: $p_{T}$ mean, MC vs Data}
+    {\DSABaseDirB/compare_MC_DATA_DSA_\TightLabel/pt_sigma_mc_vs_data.png}
+    {DSA 2023D tight: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DSA 2024I Status: MC vs Data Mean and Sigma}
+  \twoplots
+    {\DSABaseDirC/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
+    {DSA 2024I tight: $p_{T}$ mean, MC vs Data}
+    {\DSABaseDirC/compare_MC_DATA_DSA_\TightLabel/pt_sigma_mc_vs_data.png}
+    {DSA 2024I tight: $p_{T}$ sigma, MC vs Data}
+\end{frame}
+
+\begin{frame}{DSA 2022F MC: Residual Distribution Comparison}
   \begin{center}
     \[
       R =
@@ -316,7 +335,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{DSA DATA: Residual Distribution Comparison}
+\begin{frame}{DSA 2022F DATA: Residual Distribution Comparison}
   \begin{center}
     \[
       R =
@@ -336,7 +355,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{DSA Control Plots: Tag vs Probe Kinematics}
+\begin{frame}{DSA 2022F Controls: Tag vs Probe Kinematics}
   \twoplots
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/pt_tag_probe_comparison.png}
     {DSA DATA tight: tag vs probe $p_{T}$}
@@ -344,7 +363,7 @@
     {DSA DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
 \end{frame}
 
-\begin{frame}{DSA Control Plots: Tag vs Probe Quality}
+\begin{frame}{DSA 2022F Controls: Tag vs Probe Quality}
   \twoplots
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/chi2_comparison.png}
     {DSA DATA tight: $\chi^{2}$ comparison}
@@ -352,13 +371,13 @@
     {DSA DATA tight: ValidMuonDTHits comparison}
 \end{frame}
 
-\begin{frame}{DSA Control Plots: Additional Hit Information}
+\begin{frame}{DSA 2022F Controls: Additional Hit Information}
   \singleplot
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/ValidStripHits_comparison.png}
     {DSA DATA tight: ValidStripHits comparison}
 \end{frame}
 
-\begin{frame}{DSA Evidence: Tag-Probe $p_{T}$ Asymmetry}
+\begin{frame}{DSA 2022F Evidence: Tag-Probe $p_{T}$ Asymmetry}
   \twoplots
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/hist_pt_ratio_probe_over_tag.png}
     {DSA DATA tight: probe $p_{T}$/tag $p_{T}$}
@@ -366,7 +385,7 @@
     {DSA DATA tight: $p_{T}$ asymmetry}
 \end{frame}
 
-\begin{frame}{DSA Evidence: Parameterization Cross-Checks}
+\begin{frame}{DSA 2022F Evidence: Parameterization Cross-Checks}
   \twoplots
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/probe_vs_tag_pt.png}
     {DSA DATA tight: probe $p_{T}$ vs tag $p_{T}$}
@@ -374,7 +393,7 @@
     {DSA DATA tight: probe $|q|/p_{T}$ minus tag $|q|/p_{T}$}
 \end{frame}
 
-\begin{frame}{DSA Evidence: Not Driven By $n_{\mathrm{Reco}} > 2$}
+\begin{frame}{DSA 2022F Evidence: Not Driven By $n_{\mathrm{Reco}} > 2$}
   \twoplots
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/pt_ratio_probe_over_tag_ndsa_split_comparison.png}
     {DSA DATA tight: probe/tag $p_{T}$ split by multiplicity}

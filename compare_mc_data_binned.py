@@ -57,10 +57,20 @@ def choose_fixed_range(out_png, ymin_auto, ymax_auto):
     is_dsa = "dsa" in name
     is_dgl = "dgl" in name
     is_sym = "_sym_" in name or "sym_mc_vs_data" in name
+    is_hybrid = "hybrid" in name
+    is_double = "double" in name
 
     is_pt = "pt_" in name
     is_dz = "dz_" in name
     is_dxy = "dxy_" in name
+
+    is_standard_dsa_pt = is_dsa and is_pt and not (is_sym or is_hybrid or is_double)
+
+    if is_standard_dsa_pt:
+        if "sigma" in name:
+            return 0.0, 2.0
+        if "mean" in name:
+            return -0.35, 0.40
 
     if is_dsa and is_sym:
         if "sigma" in name and is_pt:
