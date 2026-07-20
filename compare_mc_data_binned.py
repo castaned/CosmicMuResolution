@@ -74,7 +74,7 @@ def choose_fixed_range(out_png, ymin_auto, ymax_auto):
             if is_dsa:
                 return -1.0, 0.6
             if is_dgl:
-                return -0.01, 0.02
+                return -0.008, 0.004
             return -0.2, 0.2
 
         if is_dz:
