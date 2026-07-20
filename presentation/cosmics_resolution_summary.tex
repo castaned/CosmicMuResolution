@@ -21,9 +21,7 @@
 \newcommand{\SelectionMode}{symmetric}
 \newcommand{\PeriodLabel}{Run \Campaign}
 \newcommand{\DataTightDir}{DATA_tight}
-\newcommand{\DataRelaxedDir}{DATA_relaxed}
 \newcommand{\TightLabel}{tight}
-\newcommand{\RelaxedLabel}{relaxed}
 
 % Edit these folder paths to point to the analysis outputs you want to present.
 \newcommand{\DGLBaseDir}{../results_full_scan_DGL_2022F_symmetric}
@@ -38,16 +36,18 @@
 \newcommand{\tightLooseTable}{
   \begin{tabular}{@{}lll@{}}
     \toprule
-    Quantity & Relaxed & Tight \\
+    Quantity & Tag-quality only & Resolution category \\
     \midrule
     Tag/probe pairing & Upstream ntuplizer & Same upstream pairing \\
-    $p_{T}^{err}/p_{T}$ (DGL) & not applied & $< 0.3$ on tag and probe \\
-    $\chi^{2}$ (DGL) & not applied & $< 5$ on tag and probe \\
-    MuonHits (DGL) & not applied & $\geq 13$ on tag and probe \\
-    ValidStripHits (DGL) & not applied & $\geq 6$ on tag and probe \\
-    $p_{T}^{err}/p_{T}$ (DSA) & not applied & $< 0.2$ on tag and probe \\
-    $\chi^{2}$ (DSA) & not applied & $< 5$ on tag and probe \\
-    ValidMuonDTHits (DSA) & not applied & $\geq 31$ on tag and probe \\
+    Tag quality definition & applied upstream & kept for the tag leg \\
+    Probe quality definition & looser than tag & matched to the tag definition \\
+    $p_{T}^{err}/p_{T}$ (DGL) & tag only & $< 0.3$ on tag and probe \\
+    $\chi^{2}$ (DGL) & tag only & $< 5$ on tag and probe \\
+    MuonHits (DGL) & tag only & $\geq 13$ on tag and probe \\
+    ValidStripHits (DGL) & tag only & $\geq 6$ on tag and probe \\
+    $p_{T}^{err}/p_{T}$ (DSA) & tag only & $< 0.2$ on tag and probe \\
+    $\chi^{2}$ (DSA) & tag only & $< 5$ on tag and probe \\
+    ValidMuonDTHits (DSA) & tag only & $\geq 31$ on tag and probe \\
     \bottomrule
   \end{tabular}
 }
@@ -139,8 +139,9 @@
   \vspace{0.5em}
   \begin{itemize}
     \item The tag/probe identity still comes from the ntuplizer.
-    \item The tight scenario adds the same quality cuts to both legs of the pair.
-    \item A single symmetric production run writes both \texttt{DATA\_relaxed}/\texttt{MC\_relaxed} and \texttt{DATA\_tight}/\texttt{MC\_tight}.
+    \item We start from a quality definition for the tag leg, because the tag is used as the reference object of the pair.
+    \item For resolution studies, the probe should satisfy the same quality definition as the tag; otherwise a looser probe can bias the $p_{T}$ comparison itself.
+    \item In the presentation, we report only the matched-quality resolution category.
   \end{itemize}
 \end{frame}
 
@@ -153,6 +154,32 @@
     \item Useful as a historical baseline.
     \item The symmetric workflow is intended to reduce tag/probe quality bias.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Samples Used}
+  \begin{block}{Data campaigns}
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      Period & Input sample \\
+      \midrule
+      2022F & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2022F\_Ntuples\_v2} \\
+      2023D & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2023D\_Ntuples\_v2} \\
+      2024I & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2024I\_Ntuples\_v4} \\
+      \bottomrule
+    \end{tabular}
+  \end{block}
+  \vspace{0.5em}
+  \begin{block}{MC campaigns}
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      Matched to data & Input sample \\
+      \midrule
+      2022F $\rightarrow$ 2022 & \texttt{CosmicsMC\_Run3\_2022\_Ntuples\_v1} \\
+      2023D $\rightarrow$ 2023 & \texttt{CosmicsMC\_Run3\_2023\_Ntuples\_v1} \\
+      2024I $\rightarrow$ 2024 & \texttt{CosmicsMC\_Run3\_2024\_Ntuples\_v3} \\
+      \bottomrule
+    \end{tabular}
+  \end{block}
 \end{frame}
 
 \section{DGL Controls}
@@ -173,6 +200,13 @@
 \end{frame}
 
 \begin{frame}{DGL: Residual Distribution Comparison}
+  \begin{center}
+    \[
+      R =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {(q/p_{T})_{\mathrm{tag}}}
+    \]
+  \end{center}
   \twoplots
     {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
     {DGL DATA tight: standard residual}
@@ -222,7 +256,7 @@
   \threebulletsummary
     {The DGL headline plots are based on the tight symmetric category.}
     {This category applies the same downstream quality cuts to both tag and probe and is our default for year-to-year reporting.}
-    {Relaxed results remain available as cross-check material, but the main DGL message should be built from one consistent category across all campaigns.}
+    {Using only this category keeps the resolution story clean and avoids confusion from mixing looser and tighter probe definitions.}
 \end{frame}
 
 \begin{frame}{Symmetric Residual Diagnostic}
