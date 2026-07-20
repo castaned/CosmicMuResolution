@@ -132,9 +132,9 @@
       \toprule
       Period & Input sample \\
       \midrule
-      2022F & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2022F\_Ntuples\_v2} \\
-      2023D & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2023D\_Ntuples\_v2} \\
-      2024I & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2024I\_Ntuples\_v4} \\
+      2022F & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2022F\_Ntuples\_v3} \\
+      2023D & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2023D\_Ntuples\_v3} \\
+      2024I & \texttt{CosmicsPPreco-CosmicDTLocalReco\_Run2024I\_Ntuples\_v3} \\
       \bottomrule
     \end{tabular}
   \end{block}
@@ -154,6 +154,13 @@
 
 \section{DGL Controls}
 
+\begin{frame}{DGL Reference Category}
+  \threebulletsummary
+    {The DGL headline plots are based on the tight symmetric category.}
+    {This category applies the same downstream quality cuts to both tag and probe and is our default for year-to-year reporting.}
+    {Using only this category keeps the resolution story clean and avoids confusion from mixing looser and tighter probe definitions.}
+\end{frame}
+
 \begin{frame}{What To Check in The Control Plots}
   \threebulletsummary
     {If tag and probe show different $p_{T}^{err}/p_{T}$ spectra, first check whether their $p_{T}$ spectra are already different.}
@@ -167,46 +174,6 @@
     {DGL DATA tight: tag vs probe $p_{T}$}
     {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/ptErr_over_pt_comparison.png}
     {DGL DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
-\end{frame}
-
-\begin{frame}{DGL MC: Residual Distribution Comparison}
-  \begin{center}
-    \[
-      R =
-      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
-      {(q/p_{T})_{\mathrm{tag}}}
-    \]
-  \end{center}
-  \twoplots
-    {\DGLBaseDir/MC_tight/MC/DGL/Control_plots/Tot_pthist.png}
-    {DGL MC tight: standard residual}
-    {\DGLBaseDir/MC_tight/MC/DGL/pt_Plots/DGL_pt_all_fits.png}
-    {DGL MC tight: residual grid vs $p_{T}$}
-\vspace{0.4em}
-\begin{itemize}
-  \item Each $p_{T}$ bin contains one residual histogram; the colored curves are fit functions over the same distribution, not separate event samples.
-  \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
-\end{itemize}
-\end{frame}
-
-\begin{frame}{DGL DATA: Residual Distribution Comparison}
-  \begin{center}
-    \[
-      R =
-      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
-      {(q/p_{T})_{\mathrm{tag}}}
-    \]
-  \end{center}
-  \twoplots
-    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
-    {DGL DATA tight: standard residual}
-    {\DGLBaseDir/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
-    {DGL DATA tight: residual grid vs $p_{T}$}
-  \vspace{0.4em}
-  \begin{itemize}
-    \item Each $p_{T}$ bin contains one residual histogram; the colored curves are fit functions over the same distribution, not separate event samples.
-    \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
@@ -237,14 +204,49 @@
     {DGL DATA tight: ValidStripHits comparison}
 \end{frame}
 
-\section{DGL Results}
+\section{DGL 2022F Residual Distributions}
 
-\begin{frame}{Reference Category}
-  \threebulletsummary
-    {The DGL headline plots are based on the tight symmetric category.}
-    {This category applies the same downstream quality cuts to both tag and probe and is our default for year-to-year reporting.}
-    {Using only this category keeps the resolution story clean and avoids confusion from mixing looser and tighter probe definitions.}
+\begin{frame}{DGL 2022F MC: Residual Distribution Comparison}
+  \begin{center}
+    \[
+      R =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {(q/p_{T})_{\mathrm{tag}}}
+    \]
+  \end{center}
+  \twoplots
+    {\DGLBaseDirA/MC_tight/MC/DGL/Control_plots/Tot_pthist.png}
+    {DGL 2022F MC tight: standard residual}
+    {\DGLBaseDirA/MC_tight/MC/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {DGL 2022F MC tight: residual grid vs $p_{T}$}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item These are the 2022 MC distributions matched to 2022F data; each $p_{T}$ bin contains one residual histogram, and the colored curves are fit functions over the same distribution.
+    \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
+  \end{itemize}
 \end{frame}
+
+\begin{frame}{DGL 2022F DATA: Residual Distribution Comparison}
+  \begin{center}
+    \[
+      R =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {(q/p_{T})_{\mathrm{tag}}}
+    \]
+  \end{center}
+  \twoplots
+    {\DGLBaseDirA/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
+    {DGL 2022F DATA tight: standard residual}
+    {\DGLBaseDirA/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {DGL 2022F DATA tight: residual grid vs $p_{T}$}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item These are the 2022F DATA distributions; each $p_{T}$ bin contains one residual histogram, and the colored curves are fit functions over the same distribution.
+    \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
+  \end{itemize}
+\end{frame}
+
+\section{DGL Results by Year}
 
 \begin{frame}{DGL 2022F: MC vs Data Mean and Sigma}
   \twoplots
