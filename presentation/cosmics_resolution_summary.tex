@@ -184,6 +184,13 @@
     {DGL DATA tight: residual grid vs $p_{T}$}
 \end{frame}
 
+\begin{frame}{How To Read The Residual-Fit Panels}
+  \threebulletsummary
+    {Each $p_{T}$ bin contains one residual histogram; the colored curves are fit functions over the same distribution, not separate event samples.}
+    {The single-Gaussian fit is the baseline model used to extract the reported mean and resolution.}
+    {The double-Gaussian fit is kept only as a cross-check for non-Gaussian tails; the final DGL results shown in this talk use the single-Gaussian summary.}
+\end{frame}
+
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
   \twoplots
     {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/tag_ptErrOverPt_vs_pt.png}
@@ -269,11 +276,37 @@
     {DSA tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
+\begin{frame}{DSA Evidence: Tag-Probe $p_{T}$ Asymmetry}
+  \twoplots
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/hist_pt_ratio_probe_over_tag.png}
+    {DSA DATA tight: probe $p_{T}$/tag $p_{T}$}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/hist_pt_asymmetry_probe_tag.png}
+    {DSA DATA tight: $p_{T}$ asymmetry}
+\end{frame}
+
+\begin{frame}{DSA Evidence: Parameterization Cross-Checks}
+  \twoplots
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/probe_vs_tag_pt.png}
+    {DSA DATA tight: probe $p_{T}$ vs tag $p_{T}$}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/hist_delta_abs_q_over_pt.png}
+    {DSA DATA tight: probe $|q|/p_{T}$ minus tag $|q|/p_{T}$}
+\end{frame}
+
+\begin{frame}{DSA Evidence: Not Driven By $n_{\mathrm{Reco}}>2}$}
+  \twoplots
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/pt_ratio_probe_over_tag_ndsa_split_comparison.png}
+    {DSA DATA tight: probe/tag $p_{T}$ split by multiplicity}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/pt_asymmetry_probe_tag_ndsa_split_comparison.png}
+    {DSA DATA tight: $p_{T}$ asymmetry split by multiplicity}
+\end{frame}
+
 \begin{frame}{DSA Findings So Far}
-  \threebulletsummary
-    {The probe tends to have systematically larger $p_{T}$ than the tag in DSA, and this directly explains the residual bias.}
-    {The effect remains when restricting to exactly two reconstructed DSA muons, so it is not mainly a multi-candidate probe-choice artifact.}
-    {The next investigation therefore moves upstream, into the ntuplizer and the standalone-track quantities themselves.}
+  \begin{itemize}
+    \item The probe tends to have systematically larger $p_{T}$ than the tag in DSA, and this directly explains the residual bias.
+    \item The dedicated control plots show the same trend in both the raw $p_{T}$ comparison and in the derived $|q|/p_{T}$ difference, which points to the track-parameter definition itself rather than only to the residual formula.
+    \item The effect remains when restricting to exactly two reconstructed DSA muons, so it is not mainly a multi-candidate probe-choice artifact.
+    \item The next investigation therefore moves upstream, into the ntuplizer and the standalone-track quantities themselves.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Approved DSA Next Steps}
