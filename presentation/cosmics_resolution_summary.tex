@@ -63,6 +63,17 @@
   \begin{columns}[T,onlytextwidth]
     \column{0.49\textwidth}
     \centering
+    \plotornote[0.72\textheight]{#1}{#2}
+    \column{0.49\textwidth}
+    \centering
+    \plotornote[0.72\textheight]{#3}{#4}
+  \end{columns}
+}
+
+\newcommand{\twoplotscompact}[4]{%
+  \begin{columns}[T,onlytextwidth]
+    \column{0.49\textwidth}
+    \centering
     \plotornote[0.52\textheight]{#1}{#2}
     \column{0.49\textwidth}
     \centering
@@ -72,12 +83,12 @@
 
 \newcommand{\singleplot}[2]{%
   \begin{center}
-    \plotornote[0.60\textheight]{#1}{#2}
+    \plotornote[0.72\textheight]{#1}{#2}
   \end{center}
 }
 
 \newcommand{\twoplotsplusone}[6]{%
-  \twoplots{#1}{#2}{#3}{#4}
+  \twoplotscompact{#1}{#2}{#3}{#4}
   \vspace{0.3em}
   \begin{center}
     \plotornote[0.22\textheight]{#5}{#6}
@@ -217,7 +228,7 @@
       {(q/p_{T})_{\mathrm{tag}}}
     \]
   \end{center}
-  \twoplots
+  \twoplotscompact
     {\DGLBaseDirA/MC_tight/MC/DGL/Control_plots/Tot_pthist.png}
     {DGL 2022F MC tight: standard residual}
     {\DGLBaseDirA/MC_tight/MC/DGL/pt_Plots/DGL_pt_all_fits.png}
@@ -237,7 +248,7 @@
       {(q/p_{T})_{\mathrm{tag}}}
     \]
   \end{center}
-  \twoplots
+  \twoplotscompact
     {\DGLBaseDirA/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
     {DGL 2022F DATA tight: standard residual}
     {\DGLBaseDirA/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
@@ -338,7 +349,7 @@
       {(q/p_{T})_{\mathrm{tag}}}
     \]
   \end{center}
-  \twoplots
+  \twoplotscompact
     {\DSABaseDir/MC_tight/MC/DSA/Control_plots/Tot_pthist.png}
     {DSA MC tight: standard residual}
     {\DSABaseDir/MC_tight/MC/DSA/pt_Plots/DSA_pt_all_fits.png}
@@ -358,7 +369,7 @@
       {(q/p_{T})_{\mathrm{tag}}}
     \]
   \end{center}
-  \twoplots
+  \twoplotscompact
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/Tot_pthist.png}
     {DSA DATA tight: standard residual}
     {\DSABaseDir/\DataTightDir/DATA/DSA/pt_Plots/DSA_pt_all_fits.png}
