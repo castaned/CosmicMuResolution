@@ -22,6 +22,7 @@ HYBRID_MAX_SIGMA_ERR_RATIO_TO_SINGLE = 2.0
 HYBRID_MIN_CORE_FRACTION = 0.10
 HYBRID_MAX_CORE_FRACTION = 0.90
 HYBRID_MAX_TAIL_TO_CORE_RATIO = 6.0
+DSA_ADAPTIVE_CORE_PT_BIN = (200.0, 1000.0)
 
 
 # ============================================================
@@ -290,10 +291,32 @@ def write_hybrid_fit_csv(csv_path, rows):
         writer.writerows(rows)
 
 
-def fit_single_gaussian(hist, fit_name, fit_min, fit_max):
+def fit_single_gaussian(hist, fit_name, fit_min, fit_max, adaptive_core=False):
+    entries = hist.GetEntries()
+    fit_method = "full_range"
+
+    if adaptive_core and entries > 5:
+        probabilities = array.array("d", [0.16, 0.50, 0.84])
+        quantiles = array.array("d", [0.0, 0.0, 0.0])
+        hist.GetQuantiles(len(probabilities), quantiles, probabilities)
+
+        q16, q50, q84 = quantiles
+        peak_bin = hist.GetMaximumBin()
+        peak = hist.GetXaxis().GetBinCenter(peak_bin)
+        bin_width = hist.GetXaxis().GetBinWidth(peak_bin)
+        robust_sigma = max(0.5 * (q84 - q16), bin_width)
+        core_min = max(fit_min, q16 - 0.5 * robust_sigma)
+        core_max = min(fit_max, q84 + 0.5 * robust_sigma)
+
+        if (
+            all(math.isfinite(value) for value in (q16, q50, q84, peak, robust_sigma))
+            and core_max - core_min >= 3.0 * bin_width
+        ):
+            fit_min, fit_max = core_min, core_max
+            fit_method = "adaptive_core_likelihood"
+
     fit = ROOT.TF1(fit_name, "gaus", fit_min, fit_max)
 
-    entries = hist.GetEntries()
     result = None
     mean = sigma = mean_err = sigma_err = 0.0
     chi2 = chi2_ndf = 0.0
@@ -301,7 +324,22 @@ def fit_single_gaussian(hist, fit_name, fit_min, fit_max):
     fit_status = -1
 
     if entries > 5:
-        result = hist.Fit(fit, "QSR")
+        fit_options = "QSR"
+        if fit_method == "adaptive_core_likelihood":
+            peak_bin = hist.GetMaximumBin()
+            peak = hist.GetXaxis().GetBinCenter(peak_bin)
+            bin_width = hist.GetXaxis().GetBinWidth(peak_bin)
+            amplitude = max(hist.GetMaximum(), 1.0)
+            sigma_seed = max(robust_sigma, bin_width)
+            mean_seed = min(max(peak, fit_min), fit_max)
+
+            fit.SetParameters(amplitude, mean_seed, sigma_seed)
+            fit.SetParLimits(0, 0.0, max(10.0 * amplitude, 1.0))
+            fit.SetParLimits(1, fit_min, fit_max)
+            fit.SetParLimits(2, 0.25 * bin_width, fit_max - fit_min)
+            fit_options = "QLSR"
+
+        result = hist.Fit(fit, fit_options)
         if result:
             fit_status = int(result.Status())
         mean = fit.GetParameter(1)
@@ -316,6 +354,9 @@ def fit_single_gaussian(hist, fit_name, fit_min, fit_max):
         "fit": fit,
         "result": result,
         "entries": entries,
+        "fit_method": fit_method,
+        "fit_min": fit_min,
+        "fit_max": fit_max,
         "fit_status": fit_status,
         "mean": mean,
         "mean_err": mean_err,
@@ -618,9 +659,29 @@ def fit_and_draw(
         c_hybrid.SetGrid()
         c_double.SetGrid()
 
-        single_result = fit_single_gaussian(h, f"gauss_{bin_type}_{i}", res_min, res_max)
+        use_adaptive_core_fit = (
+            muon_type == "DSA"
+            and bin_type == "pt"
+            and math.isclose(low, DSA_ADAPTIVE_CORE_PT_BIN[0])
+            and math.isclose(high, DSA_ADAPTIVE_CORE_PT_BIN[1])
+        )
+        single_result = fit_single_gaussian(
+            h,
+            f"gauss_{bin_type}_{i}",
+            res_min,
+            res_max,
+            adaptive_core=use_adaptive_core_fit,
+        )
         double_result = fit_double_gaussian(h, f"double_gauss_{bin_type}_{i}", res_min, res_max)
         hybrid_result = choose_hybrid_result(single_result, double_result)
+
+        if use_adaptive_core_fit:
+            print(
+                f"DSA adaptive core fit for pT {low:g}-{high:g} GeV: "
+                f"entries={int(single_result['entries'])}, "
+                f"range=[{single_result['fit_min']:.3g}, {single_result['fit_max']:.3g}], "
+                f"status={single_result['fit_status']}"
+            )
 
         entries = single_result["entries"]
         fit = single_result["fit"]
