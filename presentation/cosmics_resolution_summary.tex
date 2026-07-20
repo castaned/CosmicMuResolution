@@ -294,6 +294,46 @@
     {DSA tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
+\begin{frame}{DSA MC: Residual Distribution Comparison}
+  \begin{center}
+    \[
+      R =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {(q/p_{T})_{\mathrm{tag}}}
+    \]
+  \end{center}
+  \twoplots
+    {\DSABaseDir/MC_tight/MC/DSA/Control_plots/Tot_pthist.png}
+    {DSA MC tight: standard residual}
+    {\DSABaseDir/MC_tight/MC/DSA/pt_Plots/DSA_pt_all_fits.png}
+    {DSA MC tight: residual grid vs $p_{T}$}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item These histograms show directly that the residual shape is shifted rather than centered near zero.
+    \item The same single-Gaussian baseline is used for the quoted DSA mean and sigma points, with the double-Gaussian fit kept only as a tail-shape cross-check.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{DSA DATA: Residual Distribution Comparison}
+  \begin{center}
+    \[
+      R =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {(q/p_{T})_{\mathrm{tag}}}
+    \]
+  \end{center}
+  \twoplots
+    {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/Tot_pthist.png}
+    {DSA DATA tight: standard residual}
+    {\DSABaseDir/\DataTightDir/DATA/DSA/pt_Plots/DSA_pt_all_fits.png}
+    {DSA DATA tight: residual grid vs $p_{T}$}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item The same displaced residual shape appears in data, which is why the DSA mean and sigma summaries stay biased.
+    \item This is the motivation for the control plots that follow and for the upstream ntuplizer study.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{DSA Evidence: Tag-Probe $p_{T}$ Asymmetry}
   \twoplots
     {\DSABaseDir/\DataTightDir/DATA/DSA/Control_plots/hist_pt_ratio_probe_over_tag.png}
