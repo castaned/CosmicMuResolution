@@ -41,9 +41,9 @@
     \toprule
     Scenario & Cuts used on tag and probe \\
     \midrule
-    Relaxed & no extra quality cuts beyond the upstream ntuplizer pairing \\
-    Tight (DGL) & $p_{T}^{err}/p_{T} < 0.3$, $\chi^{2} < 5$, MuonHits $\geq 13$, ValidStripHits $\geq 6$ \\
-    Tight (DSA) & $p_{T}^{err}/p_{T} < 0.5$, $\chi^{2} < 5$, ValidMuonDTHits $\geq 31$ \\
+    %Relaxed & no extra quality cuts beyond the upstream ntuplizer pairing \\
+    DGL & $p_{T}^{err}/p_{T} < 0.3$, $\chi^{2} < 5$, MuonHits $\geq 13$, ValidStripHits $\geq 6$ \\
+    DSA & $p_{T}^{err}/p_{T} < 0.5$, $\chi^{2} < 5$, ValidMuonDTHits $\geq 31$ \\
     \bottomrule
   \end{tabular}
 }
@@ -103,9 +103,9 @@
   \end{itemize}
 }
 
-\title{Cosmic Muon Resolution Studies}
-\subtitle{DGL Results by Year and DSA Bias Status}
-\author{Alfredo Casta\~neda}
+\title{Update on Cosmic Muon Resolution Studies}
+\subtitle{}
+\author{Alfredo Casta\~neda, Olga Fimbres}
 \date{July 19, 2026}
 
 \begin{document}
@@ -114,7 +114,7 @@
   \titlepage
 \end{frame}
 
-\begin{frame}{Agenda}
+\begin{frame}{Outline}
   \tableofcontents
 \end{frame}
 
@@ -122,9 +122,9 @@
 
 \begin{frame}{Goal of This Update}
   \threebulletsummary
-    {Establish the DGL result as the main physics message, consistently across the 2022F, 2023D, and 2024I campaigns.}
-    {Use the symmetric workflow and control plots to show that the DGL selection is stable and well behaved.}
-    {Report the current DSA bias status separately, together with the upstream ntuplizer study plan.}
+    {Present results for DGL muons across the 2022F, 2023D, and 2024I campaigns.}
+    {Study control plots to show that the DGL selection is stable and well behaved.}
+    {Report the current status on DSA bias with a proposal for future studies.}
 \end{frame}
 
 \begin{frame}{Scenario Definitions}
@@ -134,9 +134,8 @@
   \vspace{0.5em}
   \begin{itemize}
     \item The tag/probe identity still comes from the ntuplizer.
-    \item In both scenarios, the listed cuts are applied symmetrically to tag and probe.
+    \item The listed cuts are applied symmetrically to tag and probe.
     \item For resolution studies, the probe should satisfy the same quality definition as the tag; otherwise a looser probe can bias the $p_{T}$ comparison itself.
-    \item In the presentation, we report only the matched-quality resolution category.
   \end{itemize}
 \end{frame}
 
@@ -158,9 +157,9 @@
       \toprule
       Matched to data & GRID LFN \\
       \midrule
-      2022F $\rightarrow$ 2022 & \texttt{/LooseMuCosmic\_Bin-P-10to3000-T0-Minus50to0\_cosmuogen/.../USER} \\
-      2023D $\rightarrow$ 2023 & \texttt{/LooseMuCosmic\_Bin-P-10to3000-T0-Minus50to0\_cosmuogen/.../USER} \\
-      2024I $\rightarrow$ 2024 & \texttt{/LooseMuCosmic\_Bin-P-10to3000-T0-Minus50to0\_cosmuogen/.../USER} \\
+      2022F $\rightarrow$ 2022 & \texttt{/LooseMuCosmic\_Bin-P-10to3000-T0-Minus50to0\_Run3_2022*/.../USER} \\
+      2023D $\rightarrow$ 2023 & \texttt{/LooseMuCosmic\_Bin-P-10to3000-T0-Minus50to0\_Run3_2023*/.../USER} \\
+      2024I $\rightarrow$ 2024 & \texttt{/LooseMuCosmic\_Bin-P-10to3000-T0-Minus50to0\_Run3_2024*/.../USER} \\
       \bottomrule
     \end{tabular}
   \end{block}
@@ -168,18 +167,12 @@
 
 \section{DGL Controls}
 
-\begin{frame}{DGL Reference Category}
-  \threebulletsummary
-    {The DGL headline plots are based on the tight symmetric category.}
-    {This category applies the same downstream quality cuts to both tag and probe and is our default for year-to-year reporting.}
-    {Using only this category keeps the resolution story clean and avoids confusion from mixing looser and tighter probe definitions.}
-\end{frame}
 
-\begin{frame}{What To Check in The Control Plots}
+\begin{frame}{Control Plots 2022}
   \threebulletsummary
     {If tag and probe show different $p_{T}^{err}/p_{T}$ spectra, first check whether their $p_{T}$ spectra are already different.}
     {The profile plot of $p_{T}^{err}/p_{T}$ versus $p_{T}$ helps separate a kinematic effect from a pure selection effect.}
-    {The hit-count and $\chi^{2}$ overlays test whether the tight scenario really balances the track-quality distributions.}
+    {The hit-count and $\chi^{2}$ overlays test whether the selection scenario really balances the track-quality distributions.}
 \end{frame}
 
 \begin{frame}{DGL: Tag vs Probe $p_{T}$ and $p_{T}^{err}/p_{T}$}
@@ -235,8 +228,8 @@
     {DGL 2022F MC tight: residual grid vs $p_{T}$}
   \vspace{0.4em}
   \begin{itemize}
-    \item These are the 2022 MC distributions matched to 2022F data; each $p_{T}$ bin contains one residual histogram, and the colored curves are fit functions over the same distribution.
-    \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
+    \item These are the 2022 MC distributions; each $p_{T}$ bin contains one residual histogram, and the colored curves are fit functions over the same distribution.
+    \item The single-Gaussian fit (red) is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
   \end{itemize}
 \end{frame}
 
@@ -256,7 +249,7 @@
   \vspace{0.4em}
   \begin{itemize}
     \item These are the 2022F DATA distributions; each $p_{T}$ bin contains one residual histogram, and the colored curves are fit functions over the same distribution.
-    \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
+    \item The single-Gaussian fit (red) is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
   \end{itemize}
 \end{frame}
 
@@ -286,12 +279,7 @@
     {DGL 2024I tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{DGL Cross-Year Message}
-  \threebulletsummary
-    {The main reporting target is a stable DGL result across 2022F, 2023D, and 2024I.}
-    {The same tight symmetric category should be used for all three years to keep the interpretation clean.}
-    {Once the remaining year outputs are filled, this section becomes the main result block of the presentation.}
-\end{frame}
+
 
 \section{DSA Status}
 
@@ -357,7 +345,7 @@
   \vspace{0.4em}
   \begin{itemize}
     \item These histograms show directly that the residual shape is shifted rather than centered near zero.
-    \item The same single-Gaussian baseline is used for the quoted DSA mean and sigma points, with the double-Gaussian fit kept only as a tail-shape cross-check.
+    \item The same single-Gaussian baseline (red) is used for the quoted DSA mean and sigma points, with the double-Gaussian fit kept only as a tail-shape cross-check.
   \end{itemize}
 \end{frame}
 
@@ -405,12 +393,6 @@
     {DSA 2024I tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{Why DSA Is Separate}
-  \threebulletsummary
-    {The DSA study is not yet a headline resolution result because the tag/probe bias remains visible after the symmetric downstream cuts.}
-    {The bias persists even for exactly-two-DSA events after matching the tag and probe quality definition.}
-    {For that reason, DSA should be presented as a status and next-step study rather than as a final resolution measurement.}
-\end{frame}
 
 \begin{frame}{DSA Findings So Far}
   \begin{itemize}
@@ -421,7 +403,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Approved DSA Next Steps}
+\begin{frame}{DSA Next Steps}
   \begin{itemize}
     \item Keep the current tag/probe selection unchanged while debugging the upstream source of the bias.
     \item Use the dedicated ntuplizer study branch with extra DSA raw branches: \texttt{p}, \texttt{qoverp}, \texttt{qoverpError}, reference point, and side label.
@@ -444,53 +426,5 @@
 \appendix
 \section{Backup}
 
-\begin{frame}{Backup: 2024I Validation Checklist}
-  \begin{itemize}
-    \item In 2024I, the DGL $\sigma(p_{T})$ comparison shows MC above data in part of the range, unlike 2022F and 2023D.
-    \item First check whether the 2024I MC residual histograms are broader than data in the same $p_{T}$ bins where the graph separates.
-    \item Then compare 2024I MC and data control plots for $p_{T}$, $p_{T}^{err}/p_{T}$, $\chi^{2}$, MuonHits, and ValidStripHits.
-    \item If the effect is concentrated only at high $p_{T}$, evaluate the role of limited statistics and residual-tail sensitivity in the fitted width.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Backup: DGL 2022F Double-Gaussian Summary}
-  \twoplots
-    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_mean_double_mc_vs_data.png}
-    {DGL 2022F tight: double-Gaussian mean, MC vs Data}
-    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_sigma_eff_double_mc_vs_data.png}
-    {DGL 2022F tight: double-Gaussian $\sigma_{\mathrm{eff}}$, MC vs Data}
-\end{frame}
-
-\begin{frame}{Backup: DGL 2023D Double-Gaussian Summary}
-  \twoplots
-    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_mean_double_mc_vs_data.png}
-    {DGL 2023D tight: double-Gaussian mean, MC vs Data}
-    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_sigma_eff_double_mc_vs_data.png}
-    {DGL 2023D tight: double-Gaussian $\sigma_{\mathrm{eff}}$, MC vs Data}
-\end{frame}
-
-\begin{frame}{Backup: DGL 2024I Double-Gaussian Summary}
-  \twoplots
-    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_mean_double_mc_vs_data.png}
-    {DGL 2024I tight: double-Gaussian mean, MC vs Data}
-    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_sigma_eff_double_mc_vs_data.png}
-    {DGL 2024I tight: double-Gaussian $\sigma_{\mathrm{eff}}$, MC vs Data}
-\end{frame}
-
-\begin{frame}{Backup: DGL 2022F Relaxed MC vs Data}
-  \twoplots
-    {\DGLBaseDirA/compare_MC_DATA_DGL_relaxed/pt_mean_mc_vs_data.png}
-    {DGL 2022F relaxed: $p_{T}$ mean, MC vs Data}
-    {\DGLBaseDirA/compare_MC_DATA_DGL_relaxed/pt_sigma_mc_vs_data.png}
-    {DGL 2022F relaxed: $p_{T}$ sigma, MC vs Data}
-\end{frame}
-
-\begin{frame}{Backup: DGL 2022F Relaxed vs Tight (Data)}
-  \twoplots
-    {\DGLBaseDirA/compare_scenarios_DATA_DGL/pt_mean_scenarios.png}
-    {DGL 2022F data: relaxed vs tight mean}
-    {\DGLBaseDirA/compare_scenarios_DATA_DGL/pt_sigma_scenarios.png}
-    {DGL 2022F data: relaxed vs tight sigma}
-\end{frame}
 
 \end{document}
