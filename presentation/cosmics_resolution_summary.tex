@@ -34,32 +34,13 @@
 % Helpers
 % ============================================================
 \newcommand{\tightLooseTable}{
-  \begin{tabular}{@{}lll@{}}
+  \begin{tabular}{@{}ll@{}}
     \toprule
-    Quantity & Tag-quality only & Resolution category \\
+    Scenario & Cuts used on tag and probe \\
     \midrule
-    Tag/probe pairing & Upstream ntuplizer & Same upstream pairing \\
-    Tag quality definition & applied upstream & kept for the tag leg \\
-    Probe quality definition & looser than tag & matched to the tag definition \\
-    $p_{T}^{err}/p_{T}$ (DGL) & tag only & $< 0.3$ on tag and probe \\
-    $\chi^{2}$ (DGL) & tag only & $< 5$ on tag and probe \\
-    MuonHits (DGL) & tag only & $\geq 13$ on tag and probe \\
-    ValidStripHits (DGL) & tag only & $\geq 6$ on tag and probe \\
-    $p_{T}^{err}/p_{T}$ (DSA) & tag only & $< 0.2$ on tag and probe \\
-    $\chi^{2}$ (DSA) & tag only & $< 5$ on tag and probe \\
-    ValidMuonDTHits (DSA) & tag only & $\geq 31$ on tag and probe \\
-    \bottomrule
-  \end{tabular}
-}
-
-\newcommand{\legacyTable}{
-  \begin{tabular}{@{}lll@{}}
-    \toprule
-    Scenario & Tag & Probe \\
-    \midrule
-    Baseline & no extra cut & no extra cut \\
-    TagOnly & $p_{T}^{err}/p_{T} < 0.2$ & no extra cut \\
-    TagProbe & $p_{T}^{err}/p_{T} < 0.2$ & $p_{T}^{err}/p_{T} < 0.2$ \\
+    Relaxed & no extra quality cuts beyond the upstream ntuplizer pairing \\
+    Tight (DGL) & $p_{T}^{err}/p_{T} < 0.3$, $\chi^{2} < 5$, MuonHits $\geq 13$, ValidStripHits $\geq 6$ \\
+    Tight (DSA) & $p_{T}^{err}/p_{T} < 0.2$, $\chi^{2} < 5$, ValidMuonDTHits $\geq 31$ \\
     \bottomrule
   \end{tabular}
 }
@@ -139,20 +120,9 @@
   \vspace{0.5em}
   \begin{itemize}
     \item The tag/probe identity still comes from the ntuplizer.
-    \item We start from a quality definition for the tag leg, because the tag is used as the reference object of the pair.
+    \item In both scenarios, the listed cuts are applied symmetrically to tag and probe.
     \item For resolution studies, the probe should satisfy the same quality definition as the tag; otherwise a looser probe can bias the $p_{T}$ comparison itself.
     \item In the presentation, we report only the matched-quality resolution category.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Legacy Reference}
-  \begin{block}{Original three-scenario study}
-    \legacyTable
-  \end{block}
-  \vspace{0.5em}
-  \begin{itemize}
-    \item Useful as a historical baseline.
-    \item The symmetric workflow is intended to reduce tag/probe quality bias.
   \end{itemize}
 \end{frame}
 
