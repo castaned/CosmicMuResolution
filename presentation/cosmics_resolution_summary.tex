@@ -169,7 +169,27 @@
     {DGL DATA tight: tag vs probe $p_{T}^{err}/p_{T}$}
 \end{frame}
 
-\begin{frame}{DGL: Residual Distribution Comparison}
+\begin{frame}{DGL MC: Residual Distribution Comparison}
+  \begin{center}
+    \[
+      R =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {(q/p_{T})_{\mathrm{tag}}}
+    \]
+  \end{center}
+  \twoplots
+    {\DGLBaseDir/MC_tight/MC/DGL/Control_plots/Tot_pthist.png}
+    {DGL MC tight: standard residual}
+    {\DGLBaseDir/MC_tight/MC/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {DGL MC tight: residual grid vs $p_{T}$}
+\vspace{0.4em}
+\begin{itemize}
+  \item Each $p_{T}$ bin contains one residual histogram; the colored curves are fit functions over the same distribution, not separate event samples.
+  \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{DGL DATA: Residual Distribution Comparison}
   \begin{center}
     \[
       R =
@@ -182,13 +202,11 @@
     {DGL DATA tight: standard residual}
     {\DGLBaseDir/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
     {DGL DATA tight: residual grid vs $p_{T}$}
-\end{frame}
-
-\begin{frame}{How To Read The Residual-Fit Panels}
-  \threebulletsummary
-    {Each $p_{T}$ bin contains one residual histogram; the colored curves are fit functions over the same distribution, not separate event samples.}
-    {The single-Gaussian fit is the baseline model used to extract the reported mean and resolution.}
-    {The double-Gaussian fit is kept only as a cross-check for non-Gaussian tails; the final DGL results shown in this talk use the single-Gaussian summary.}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Each $p_{T}$ bin contains one residual histogram; the colored curves are fit functions over the same distribution, not separate event samples.
+    \item The single-Gaussian fit is the baseline model used to extract the reported mean and resolution; the double-Gaussian fit is kept only as a tail-shape cross-check.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
