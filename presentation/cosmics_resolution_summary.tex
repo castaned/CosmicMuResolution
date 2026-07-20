@@ -210,16 +210,8 @@
   \twoplots
     {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
     {DGL DATA tight: standard residual}
-    {\DGLBaseDir/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist_sym.png}
-    {DGL DATA tight: symmetric residual}
-\end{frame}
-
-\begin{frame}{DGL: Residual Distributions vs $p_{T}$}
-  \twoplots
     {\DGLBaseDir/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
-    {DGL DATA tight: standard residual grid vs $p_{T}$}
-    {\DGLBaseDir/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits_sym.png}
-    {DGL DATA tight: symmetric residual grid vs $p_{T}$}
+    {DGL DATA tight: residual grid vs $p_{T}$}
 \end{frame}
 
 \begin{frame}{DGL: Is $p_{T}^{err}/p_{T}$ Difference Mainly Kinematic?}
@@ -259,36 +251,12 @@
     {Using only this category keeps the resolution story clean and avoids confusion from mixing looser and tighter probe definitions.}
 \end{frame}
 
-\begin{frame}{Symmetric Residual Diagnostic}
-  \begin{block}{Definition}
-    \[
-      R_{\mathrm{sym}} =
-      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
-      {\tfrac{1}{2}\left[(q/p_{T})_{\mathrm{probe}} + (q/p_{T})_{\mathrm{tag}}\right]}
-    \]
-  \end{block}
-  \vspace{0.4em}
-  \begin{itemize}
-    \item Unlike the standard residual, the denominator does not privilege the tag leg alone.
-    \item This is a diagnostic observable used to test whether the bias comes from the residual definition or from a real tag/probe reconstruction asymmetry.
-    \item If the standard and symmetric residuals are both shifted, the asymmetry is likely intrinsic to the reconstructed pair.
-  \end{itemize}
-\end{frame}
-
 \begin{frame}{DGL 2022F: MC vs Data Mean and Sigma}
   \twoplots
     {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
     {DGL 2022F tight: $p_{T}$ mean, MC vs Data}
     {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
     {DGL 2022F tight: $p_{T}$ sigma, MC vs Data}
-\end{frame}
-
-\begin{frame}{DGL 2022F: Symmetric Residual Diagnostic}
-  \twoplots
-    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
-    {DGL 2022F tight: symmetric residual mean}
-    {\DGLBaseDirA/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
-    {DGL 2022F tight: symmetric residual sigma}
 \end{frame}
 
 \begin{frame}{DGL 2023D: MC vs Data Mean and Sigma}
@@ -299,28 +267,12 @@
     {DGL 2023D tight: $p_{T}$ sigma, MC vs Data}
 \end{frame}
 
-\begin{frame}{DGL 2023D: Symmetric Residual Diagnostic}
-  \twoplots
-    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
-    {DGL 2023D tight: symmetric residual mean}
-    {\DGLBaseDirB/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
-    {DGL 2023D tight: symmetric residual sigma}
-\end{frame}
-
 \begin{frame}{DGL 2024I: MC vs Data Mean and Sigma}
   \twoplots
     {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
     {DGL 2024I tight: $p_{T}$ mean, MC vs Data}
     {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
     {DGL 2024I tight: $p_{T}$ sigma, MC vs Data}
-\end{frame}
-
-\begin{frame}{DGL 2024I: Symmetric Residual Diagnostic}
-  \twoplots
-    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_mean_sym_mc_vs_data.png}
-    {DGL 2024I tight: symmetric residual mean}
-    {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_sigma_sym_mc_vs_data.png}
-    {DGL 2024I tight: symmetric residual sigma}
 \end{frame}
 
 \begin{frame}{DGL Cross-Year Message}
@@ -335,24 +287,16 @@
 \begin{frame}{Why DSA Is Separate}
   \threebulletsummary
     {The DSA study is not yet a headline resolution result because the tag/probe bias remains visible after the symmetric downstream cuts.}
-    {The bias persists even for exactly-two-DSA events and also remains in the symmetric residual diagnostic.}
+    {The bias persists even for exactly-two-DSA events after matching the tag and probe quality definition.}
     {For that reason, DSA should be presented as a status and next-step study rather than as a final resolution measurement.}
 \end{frame}
 
-\begin{frame}{DSA Status: Symmetric Residual Diagnostic}
+\begin{frame}{DSA Status: MC vs Data Mean and Sigma}
   \twoplots
     {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_mc_vs_data.png}
     {DSA tight: $p_{T}$ mean, MC vs Data}
     {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_sigma_mc_vs_data.png}
     {DSA tight: $p_{T}$ sigma, MC vs Data}
-\end{frame}
-
-\begin{frame}{DSA Status: Symmetric Residual Cross-Check}
-  \twoplots
-    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_mean_sym_mc_vs_data.png}
-    {DSA tight: symmetric residual mean}
-    {\DSABaseDir/compare_MC_DATA_DSA_\TightLabel/pt_sigma_sym_mc_vs_data.png}
-    {DSA tight: symmetric residual sigma}
 \end{frame}
 
 \begin{frame}{DSA Findings So Far}
