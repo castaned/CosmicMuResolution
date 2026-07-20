@@ -1495,13 +1495,14 @@ def main():
         ("hist_probe_secondaryHits", f"Probe {secondary_hit_label};{secondary_hit_label};Events", 80, 0.0, 80.0),
         "probe_secondary_hit_count"
     )
+    pterr_over_pt_2d_max = 0.3 if args.muon_type == "DGL" else 1.0
     h2_tag_pterr_vs_pt = df2.Histo2D(
-        ("hist2_tag_ptErrOverPt_vs_pt", "Tag p_{T}^{error}/p_{T} vs p_{T};p_{T} [GeV];p_{T}^{error}/p_{T}", 80, 0.0, 400.0, 60, 0.0, 1.0),
+        ("hist2_tag_ptErrOverPt_vs_pt", "Tag p_{T}^{error}/p_{T} vs p_{T};p_{T} [GeV];p_{T}^{error}/p_{T}", 80, 0.0, 400.0, 60, 0.0, pterr_over_pt_2d_max),
         "tag_pt",
         "tag_pt_err_over_pt"
     )
     h2_probe_pterr_vs_pt = df2.Histo2D(
-        ("hist2_probe_ptErrOverPt_vs_pt", "Probe p_{T}^{error}/p_{T} vs p_{T};p_{T} [GeV];p_{T}^{error}/p_{T}", 80, 0.0, 400.0, 60, 0.0, 1.0),
+        ("hist2_probe_ptErrOverPt_vs_pt", "Probe p_{T}^{error}/p_{T} vs p_{T};p_{T} [GeV];p_{T}^{error}/p_{T}", 80, 0.0, 400.0, 60, 0.0, pterr_over_pt_2d_max),
         "probe_pt",
         "probe_pt_err_over_pt"
     )
