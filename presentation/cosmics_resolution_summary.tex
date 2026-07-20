@@ -278,6 +278,22 @@
     {These slides let us compare whether the main MC vs Data trends are already present before the tight balancing cuts are applied.}
 \end{frame}
 
+\begin{frame}{Symmetric Residual Diagnostic}
+  \begin{block}{Definition}
+    \[
+      R_{\mathrm{sym}} =
+      \frac{(q/p_{T})_{\mathrm{probe}} - (q/p_{T})_{\mathrm{tag}}}
+      {\tfrac{1}{2}\left[(q/p_{T})_{\mathrm{probe}} + (q/p_{T})_{\mathrm{tag}}\right]}
+    \]
+  \end{block}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Unlike the standard residual, the denominator does not privilege the tag leg alone.
+    \item This is a diagnostic observable used to test whether the bias comes from the residual definition or from a real tag/probe reconstruction asymmetry.
+    \item If the standard and symmetric residuals are both shifted, the asymmetry is likely intrinsic to the reconstructed pair.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{DGL Relaxed: MC vs Data Mean and Sigma}
   \twoplots
     {\DGLBaseDir/compare_MC_DATA_DGL_\RelaxedLabel/pt_mean_mc_vs_data.png}
