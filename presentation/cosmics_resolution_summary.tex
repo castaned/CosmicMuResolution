@@ -272,11 +272,15 @@
 \end{frame}
 
 \begin{frame}{DGL 2024I: MC vs Data Mean and Sigma}
-  \twoplots
+  \twoplotscompact
     {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_mean_mc_vs_data.png}
     {DGL 2024I tight: $p_{T}$ mean, MC vs Data}
     {\DGLBaseDirC/compare_MC_DATA_DGL_\TightLabel/pt_sigma_mc_vs_data.png}
     {DGL 2024I tight: $p_{T}$ sigma, MC vs Data}
+  \vspace{0.4em}
+  \begin{center}
+    \textcolor{red}{\textbf{Caution: the fitted MC resolution is worse than DATA in several 2024I bins. This unexpected ordering is under fit validation; see the backup residual distributions.}}
+  \end{center}
 \end{frame}
 
 
@@ -447,6 +451,32 @@
 
 \appendix
 \section{Backup}
+
+\begin{frame}{Backup: DGL 2024 MC Fit Validation}
+  \twoplotscompact
+    {\DGLBaseDirC/MC_tight/MC/DGL/Control_plots/Tot_pthist.png}
+    {DGL 2024 MC tight: inclusive residual}
+    {\DGLBaseDirC/MC_tight/MC/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {DGL 2024 MC tight: residual fits vs $p_{T}$}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Check the bin-by-bin fit range, convergence, tail description, and event count where the fitted MC sigma exceeds DATA.
+    \item The red single-Gaussian fit provides the reported resolution; the double-Gaussian curve is a tail-shape cross-check.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: DGL 2024I DATA Fit Validation}
+  \twoplotscompact
+    {\DGLBaseDirC/\DataTightDir/DATA/DGL/Control_plots/Tot_pthist.png}
+    {DGL 2024I DATA tight: inclusive residual}
+    {\DGLBaseDirC/\DataTightDir/DATA/DGL/pt_Plots/DGL_pt_all_fits.png}
+    {DGL 2024I DATA tight: residual fits vs $p_{T}$}
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Compare the same fit diagnostics directly with MC before interpreting the sigma ordering as a detector-resolution effect.
+    \item Pay particular attention to differences in non-Gaussian tails and statistical precision across the $p_{T}$ bins.
+  \end{itemize}
+\end{frame}
 
 
 \end{document}
