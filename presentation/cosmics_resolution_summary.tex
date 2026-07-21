@@ -403,15 +403,36 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{DSA Next Steps}
-  \begin{itemize}
-    \item Keep the current tag/probe selection unchanged while debugging the upstream source of the bias.
-    \item Repeat the DSA study with progressively higher, identical minimum $p_{T}$ requirements for tag and probe; the spectra become more similar at higher $p_{T}$, so this may reduce the observed bias.
-    \item For each $p_{T}$ threshold, compare the residual mean and retained event count to distinguish a genuine bias reduction from a low-statistics effect.
-    \item Use the dedicated ntuplizer study branch with extra DSA raw branches: \texttt{p}, \texttt{qoverp}, \texttt{qoverpError}, reference point, and side label.
-    \item Study the unordered exactly-two-DSA pair summary before applying any tag/probe interpretation.
-    \item Decide only after that whether the issue is mainly track parameterization, detector-side asymmetry, or something else upstream.
-  \end{itemize}
+\begin{frame}{DSA Proposed Study I: Analysis-Level Tests}
+  \small
+  \begin{block}{Hypothesis to test}
+    The tag and probe $p_{T}$ spectra become more similar as $p_{T}$ increases. A higher common threshold may reduce the residual bias, but it also reduces statistics and can sculpt a resolution measurement.
+  \end{block}
+  \begin{enumerate}
+    \item Keep the same quality requirements on tag and probe and require exactly two reconstructed DSA muons.
+    \item Scan a common minimum $p_{T}$ threshold: 20, 30, 40, and 50 GeV. Do not optimize the tag and probe thresholds separately.
+    \item At every threshold compare MC and Data using the event count, probe/tag $p_{T}$ ratio, residual mean, and fitted resolution in each $p_{T}$ bin.
+    \item Treat the higher-$p_{T}$ requirement as a diagnostic first. Adopt it as a physics selection only if the mean approaches zero with adequate statistics and the result is stable against nearby thresholds.
+  \end{enumerate}
+  \begin{alertblock}{Group input requested}
+    Are these threshold points sufficient, and what minimum number of events per fit bin should define an acceptable result?
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{DSA Proposed Study II: Ntuplizer Diagnostics}
+  \small
+  \begin{block}{Goal}
+    Determine whether the bias originates from tag/probe assignment, detector-side dependence, or the standalone-track parameterization itself.
+  \end{block}
+  \begin{enumerate}
+    \item Produce a small validation sample from the dedicated study branch, preserving the current selection and an unordered exactly-two-DSA pair.
+    \item Store per-track raw quantities: $p$, $p_{T}$, $q/p$, $q/p$ uncertainty, charge, reference point, track index, and detector-side label.
+    \item Compare upper and lower detector sides before assigning tag/probe labels; then repeat after swapping or randomizing the labels.
+    \item Check whether the asymmetry is already present in the raw track parameters and whether it is reproduced consistently in MC and Data.
+  \end{enumerate}
+  \begin{alertblock}{Decision after the test}
+    Choose between a selection-level mitigation, a side-dependent correction, or further reconstruction studies only after identifying where the asymmetry first appears.
+  \end{alertblock}
 \end{frame}
 
 \section{Takeaways}
